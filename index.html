@@ -1,0 +1,1261 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ships opinion table</title>
+    <!-- Підключаємо шрифт Typewriter -->
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Підключаємо бібліотеку для створення скріншоту таблиці -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root {
+            /* Базові змінні, які будуть перезаписуватись темами */
+            --bg-body: #e0ddd5;
+            --bg-paper: #fdfaf6;
+            --text-main: #111;
+            --border-main: #111;
+            --btn-bg: white;
+            --btn-text: #111;
+            --btn-hover: #f0f0f0;
+            --btn-active: #111;
+            --btn-active-text: white;
+            
+            /* Кольори легенди (за замовчуванням Typewriter Vintage) */
+            --color-default: transparent;
+            --color-love: #d9534f;
+            --color-like: #f0ad4e;
+            --color-platonic: #e4d836;
+            --color-neutral: #8fbc8f;
+            --color-dislike: #5bc0de;
+            --color-hate: #9c66a4;
+            --color-custom1: transparent;
+            --color-custom2: transparent;
+        }
+
+        body {
+            font-family: 'Courier Prime', 'Courier New', Courier, monospace;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        /* Панель налаштувань (Мова + Теми) */
+        .settings-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 1000px;
+        }
+
+        .settings-row {
+            display: flex;
+            gap: 10px;
+            background: var(--bg-paper);
+            padding: 10px;
+            border-radius: 4px;
+            border: 2px solid var(--border-main);
+            box-shadow: 4px 4px 0px rgba(0,0,0,0.15);
+            flex-wrap: wrap;
+            align-items: center;
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+
+        .settings-label {
+            font-weight: bold;
+            margin-right: 10px;
+            text-transform: uppercase;
+        }
+
+        .setting-btn {
+            font-family: 'Courier Prime', 'Courier New', Courier, monospace;
+            padding: 6px 12px;
+            border: 2px solid var(--border-main);
+            background: var(--btn-bg);
+            color: var(--btn-text);
+            cursor: pointer;
+            border-radius: 4px;
+            font-weight: bold;
+            transition: 0.2s;
+            text-transform: uppercase;
+            font-size: 14px;
+        }
+
+        .setting-btn:hover {
+            background: var(--btn-hover);
+        }
+
+        .setting-btn.active {
+            background: var(--btn-active);
+            color: var(--btn-active-text);
+            border-color: var(--btn-active);
+        }
+
+        .marker-input {
+            font-family: 'Courier Prime', 'Courier New', Courier, monospace;
+            padding: 6px;
+            border: 1px solid var(--border-main);
+            background: var(--bg-paper);
+            color: var(--text-main);
+            border-radius: 4px;
+            width: 140px;
+            font-size: 14px;
+        }
+
+        .marker-input:focus {
+            outline: 2px solid var(--border-main);
+        }
+
+        /* Кастомна палітра (прихована за замовчуванням) */
+        #custom-palette-settings {
+            display: none;
+            width: 100%;
+            flex-wrap: wrap;
+            gap: 15px;
+            padding-top: 10px;
+            border-top: 1px dashed var(--border-main);
+            margin-top: 5px;
+        }
+
+        .color-picker-group {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .color-picker-group label {
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        input[type="color"] {
+            -webkit-appearance: none;
+            border: 1px solid var(--border-main);
+            width: 30px;
+            height: 30px;
+            padding: 0;
+            background: none;
+            cursor: pointer;
+        }
+        
+        input[type="color"]::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+        
+        input[type="color"]::-webkit-color-swatch {
+            border: none;
+        }
+
+        /* Основний контейнер, який буде зберігатися як картинка */
+        #capture-area {
+            background-color: var(--bg-paper);
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            max-width: 1000px;
+            width: 100%;
+            box-sizing: border-box;
+            border: 2px solid var(--border-main);
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .title {
+            font-size: 34px;
+            font-weight: bold;
+            line-height: 1.2;
+            margin: 0;
+            max-width: 400px;
+            text-transform: uppercase;
+            letter-spacing: -1px;
+            color: var(--text-main);
+            transition: color 0.3s;
+        }
+
+        .legend {
+            border: 2px solid var(--border-main);
+            padding: 10px 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px 30px;
+            background: var(--bg-paper);
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--text-main);
+            transition: color 0.3s, transform 0.1s;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            border: 2px solid transparent;
+        }
+
+        .legend-item:hover {
+            background-color: rgba(0,0,0,0.05);
+        }
+
+        .legend-item.active-brush {
+            border-color: var(--border-main);
+            background-color: var(--btn-hover);
+            transform: scale(1.05);
+        }
+        
+        .mode-indicator {
+            width: 100%;
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 14px;
+            font-style: italic;
+            opacity: 0.8;
+        }
+
+        .color-box {
+            width: 26px;
+            height: 26px;
+            margin-right: 12px;
+            border: 2px solid var(--border-main);
+            transition: border-color 0.3s, background-color 0.3s;
+        }
+
+        /* Таблиця */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+            border: 2px solid var(--border-main);
+            transition: border-color 0.3s;
+            background-color: var(--bg-paper);
+        }
+
+        td {
+            border: 1px solid var(--border-main);
+            padding: 6px 4px;
+            font-size: 13px; /* Зменшено для кращого вписування */
+            letter-spacing: -0.2px; /* Злегка стискаємо текст */
+            font-weight: bold;
+            cursor: pointer;
+            user-select: none;
+            transition: background-color 0.1s, border-color 0.3s, color 0.3s;
+            background-color: var(--color-default);
+            height: auto;
+            min-height: 45px; /* Замість фіксованої висоти — мінімальна */
+            text-align: left;
+            color: var(--text-main);
+            
+            /* Налаштування для ідеального перенесення тексту ЦІЛИМИ словами */
+            word-break: normal;
+            word-wrap: break-word; /* Старий синонім для сумісності */
+            overflow-wrap: break-word; 
+            hyphens: none; /* Забороняємо розривати слова з дефісами (як re-mus) */
+            line-height: 1.15;
+            vertical-align: middle;
+        }
+
+        td:hover {
+            opacity: 0.85;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        /* Кольори легенди - тепер використовують CSS змінні, які ми оновлюємо динамічно */
+        .bg-default { background-color: var(--color-default); }
+        .bg-love { background-color: var(--color-love); }
+        .bg-like { background-color: var(--color-like); }
+        .bg-platonic { background-color: var(--color-platonic); }
+        .bg-neutral { background-color: var(--color-neutral); }
+        .bg-dislike { background-color: var(--color-dislike); }
+        .bg-hate { background-color: var(--color-hate); }
+        .bg-custom1 { background-color: var(--color-custom1); }
+        .bg-custom2 { background-color: var(--color-custom2); }
+
+        /* Кнопки керування */
+        .controls {
+            margin-top: 30px;
+            display: flex;
+            gap: 20px;
+        }
+
+        .action-btn {
+            font-family: 'Courier Prime', 'Courier New', Courier, monospace;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: bold;
+            text-transform: uppercase;
+            cursor: pointer;
+            border: 2px solid var(--border-main);
+            border-radius: 4px;
+            transition: transform 0.1s, box-shadow 0.1s, background-color 0.3s, color 0.3s;
+            box-shadow: 4px 4px 0px var(--border-main);
+            background-color: var(--bg-paper);
+            color: var(--text-main);
+        }
+
+        .action-btn:active { 
+            transform: translate(4px, 4px);
+            box-shadow: 0px 0px 0px var(--border-main); 
+        }
+        
+        .action-btn:hover { background-color: var(--btn-hover); }
+
+        /* Панель редагування таблиці */
+        #edit-table-controls {
+            display: none;
+            gap: 15px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+            width: 100%;
+        }
+
+        /* Модальне вікно для шерингу та помилок */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 1000;
+        }
+        .modal-content {
+            background: var(--bg-paper); padding: 25px; border-radius: 4px;
+            border: 2px solid var(--border-main); color: var(--text-main);
+            max-width: 90%; width: 450px; text-align: center; box-shadow: 8px 8px 0px rgba(0,0,0,0.2);
+            font-family: 'Courier Prime', 'Courier New', Courier, monospace;
+        }
+        .modal-input {
+            width: 100%; padding: 10px; margin: 15px 0; border: 2px solid var(--border-main);
+            box-sizing: border-box; font-family: monospace; background: rgba(255,255,255,0.6);
+            color: var(--text-main);
+        }
+
+        td[contenteditable="true"] {
+            cursor: text;
+            background-color: rgba(255, 255, 255, 0.4);
+            outline: 2px dashed var(--border-main);
+            outline-offset: -2px;
+        }
+        
+        td[contenteditable="true"]:hover {
+            opacity: 1; /* Вимикаємо затемнення при наведенні в режимі редагування */
+            box-shadow: none;
+        }
+
+        /* Адаптивність для мобільних пристроїв */
+        @media (max-width: 768px) {
+            #capture-area { padding: 10px; width: 100%; box-sizing: border-box; overflow: hidden; }
+            .title { font-size: 20px; }
+            .legend { gap: 10px; padding: 10px; }
+            .legend-item { font-size: 14px; }
+            .color-box { width: 18px; height: 18px; margin-right: 6px; }
+            
+            /* Жорстке стискання комірок для телефонів */
+            td { 
+                font-size: 10px; 
+                padding: 4px 2px; 
+                letter-spacing: -0.5px;
+                hyphens: none;
+            }
+            
+            table { min-width: 100%; width: 100%; } /* Таблиця тепер адаптується під ширину екрану */
+            .controls { flex-direction: column; width: 100%; max-width: 300px; }
+            .settings-row { justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Панель налаштувань -->
+    <div class="settings-panel">
+        <!-- Перемикач мов -->
+        <div class="settings-row">
+            <span class="settings-label" id="label-lang">Lang:</span>
+            <button class="setting-btn active" onclick="setLang('en')" id="btn-en">EN</button>
+            <button class="setting-btn" onclick="setLang('ru')" id="btn-ru">RU</button>
+            <button class="setting-btn" onclick="setLang('ua')" id="btn-ua">UA</button>
+        </div>
+
+        <!-- Перемикач тем -->
+        <div class="settings-row">
+            <span class="settings-label" id="label-theme">Theme:</span>
+            <button class="setting-btn active" onclick="setTheme('typewriter')" id="btn-theme-typewriter">Typewriter</button>
+            <button class="setting-btn" onclick="setTheme('pastel')" id="btn-theme-pastel">Pastel Dreams</button>
+            <button class="setting-btn" onclick="setTheme('dark_academia')" id="btn-theme-dark">Dark Academia</button>
+            <button class="setting-btn" onclick="setTheme('custom')" id="btn-theme-custom">Custom</button>
+
+            <!-- Секція для кастомної палітри -->
+            <div id="custom-palette-settings">
+                <div class="color-picker-group"><input type="color" id="color-love" value="#ff4d4d"><label id="label-custom-love">Love</label></div>
+                <div class="color-picker-group"><input type="color" id="color-like" value="#ffa64d"><label id="label-custom-like">Like</label></div>
+                <div class="color-picker-group"><input type="color" id="color-platonic" value="#ffff4d"><label id="label-custom-platonic">Platonic</label></div>
+                <div class="color-picker-group"><input type="color" id="color-neutral" value="#4dff4d"><label id="label-custom-neutral">Neutral</label></div>
+                <div class="color-picker-group"><input type="color" id="color-dislike" value="#4dffff"><label id="label-custom-dislike">Dislike</label></div>
+                <div class="color-picker-group"><input type="color" id="color-hate" value="#a64dff"><label id="label-custom-hate">Hate</label></div>
+                <div class="color-picker-group" id="picker-group-custom1" style="display:none;"><input type="color" id="color-custom1" value="#ff66b2"><label id="label-custom-custom1">Marker 7</label></div>
+                <div class="color-picker-group" id="picker-group-custom2" style="display:none;"><input type="color" id="color-custom2" value="#66ccff"><label id="label-custom-custom2">Marker 8</label></div>
+            </div>
+        </div>
+
+        <!-- Редагування назв маркерів -->
+        <div class="settings-row" style="flex-direction: column; align-items: flex-start;">
+            <span class="settings-label" id="label-edit-names">Marker Names:</span>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; width: 100%;">
+                <input type="text" id="input-name-love" class="marker-input" maxlength="20">
+                <input type="text" id="input-name-like" class="marker-input" maxlength="20">
+                <input type="text" id="input-name-platonic" class="marker-input" maxlength="20">
+                <input type="text" id="input-name-neutral" class="marker-input" maxlength="20">
+                <input type="text" id="input-name-dislike" class="marker-input" maxlength="20">
+                <input type="text" id="input-name-hate" class="marker-input" maxlength="20">
+                <input type="text" id="input-custom1" placeholder="+ Marker 7" class="marker-input" maxlength="20">
+                <input type="text" id="input-custom2" placeholder="+ Marker 8" class="marker-input" maxlength="20">
+            </div>
+        </div>
+    </div>
+
+    <!-- Зона збереження картинки -->
+    <div id="capture-area">
+        <div class="header">
+            <!-- Заголовок, який змінюється -->
+            <h1 class="title" id="ui-title">Ships opinion table</h1>
+            
+            <div class="legend">
+                <div class="legend-item" data-state="1" id="leg-love" title="Press 1"><div class="color-box bg-love"></div> <span id="ui-love">Love</span></div>
+                <div class="legend-item" data-state="2" id="leg-like" title="Press 2"><div class="color-box bg-like"></div> <span id="ui-like">Like</span></div>
+                <div class="legend-item" data-state="3" id="leg-platonic" title="Press 3"><div class="color-box bg-platonic"></div> <span id="ui-platonic">Platonic</span></div>
+                <div class="legend-item" data-state="4" id="leg-neutral" title="Press 4"><div class="color-box bg-neutral"></div> <span id="ui-neutral">Neutral</span></div>
+                <div class="legend-item" data-state="5" id="leg-dislike" title="Press 5"><div class="color-box bg-dislike"></div> <span id="ui-dislike">Dislike</span></div>
+                <div class="legend-item" data-state="6" id="leg-hate" title="Press 6"><div class="color-box bg-hate"></div> <span id="ui-hate">Hate</span></div>
+                <div class="legend-item" data-state="7" id="leg-custom1" title="Press 7" style="display: none;"><div class="color-box bg-custom1"></div> <span id="ui-custom1"></span></div>
+                <div class="legend-item" data-state="8" id="leg-custom2" title="Press 8" style="display: none;"><div class="color-box bg-custom2"></div> <span id="ui-custom2"></span></div>
+            </div>
+        </div>
+
+        <div class="mode-indicator" id="ui-mode-hint">Mode: Cycle colors (Click a legend item or press 1-6 to paint specific colors)</div>
+
+        <table id="ship-table">
+            <!-- Таблиця генерується через JS -->
+        </table>
+    </div>
+
+    <div class="controls">
+        <button class="action-btn" id="download-btn">[ Download ]</button>
+        <button class="action-btn" id="reset-btn">[ Reset ]</button>
+        <button class="action-btn" id="edit-mode-btn">[ Edit Table ]</button>
+        <button class="action-btn" id="share-btn">[ Share Link ]</button>
+    </div>
+
+    <!-- Панель керування структурою (прихована за замовчуванням) -->
+    <div id="edit-table-controls">
+        <button class="setting-btn" id="btn-add-row" onclick="addRow()">[ + Row ]</button>
+        <button class="setting-btn" id="btn-rm-row" onclick="removeRow()">[ - Row ]</button>
+        <button class="setting-btn" id="btn-add-col" onclick="addColumn()">[ + Col ]</button>
+        <button class="setting-btn" id="btn-rm-col" onclick="removeColumn()">[ - Col ]</button>
+        
+        <div style="width: 100%; display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 15px; border-top: 1px dashed var(--border-main); padding-top: 15px;">
+            <span class="settings-label" id="label-import">Import Data:</span>
+            <textarea id="import-textarea" class="marker-input" style="width: 100%; max-width: 600px; height: 80px; resize: vertical;" placeholder="Paste text here... (Lines = Rows, Tabs/Commas = Columns)"></textarea>
+            <button class="setting-btn" id="btn-import-data">[ Import ]</button>
+        </div>
+    </div>
+
+    <!-- Модальне вікно -->
+    <div id="custom-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 id="modal-title" style="margin-top:0; text-transform: uppercase;">Notification</h3>
+            <p id="modal-message" style="margin-bottom: 5px;"></p>
+            <input type="text" id="modal-link" class="modal-input" style="display:none;" readonly>
+            <div style="display: flex; gap: 10px; justify-content: center; margin-top: 10px;">
+                <button class="setting-btn" id="modal-copy-btn" style="display:none; padding: 8px 16px;">[ Copy ]</button>
+                <button class="setting-btn" id="modal-close-btn" style="padding: 8px 16px;">[ Close ]</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // --- FIREBASE ІНІЦІАЛІЗАЦІЯ ---
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'marauders-ships-app';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        
+        let app, db, auth, currentUser;
+        
+        if (Object.keys(firebaseConfig).length > 0) {
+            app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
+            initAuth();
+        }
+
+        async function initAuth() {
+            try {
+                if (typeof __initial_auth_token !== 'undefined') {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+                currentUser = auth.currentUser;
+                loadSharedTable();
+            } catch (error) {
+                console.error("Auth error:", error);
+            }
+        }
+
+        // --- ДАНІ ЛОКАЛІЗАЦІЇ ---
+        const uiText = {
+            en: {
+                title: "Ships opinion table",
+                love: "Love", like: "Like", platonic: "Platonic", 
+                neutral: "Neutral", dislike: "Dislike", hate: "Hate",
+                download: "[ Download ]", reset: "[ Reset ]", saving: "Saving...",
+                labelLang: "Lang:", labelTheme: "Theme:", labelEditNames: "Marker Names:",
+                placeholder1: "+ Marker 7", placeholder2: "+ Marker 8",
+                editTable: "[ Edit Table ]", doneEditing: "[ Done Editing ]",
+                addRow: "[ + Row ]", removeRow: "[ - Row ]", addCol: "[ + Col ]", removeCol: "[ - Col ]",
+                importData: "[ Import ]", importLabel: "Import Data:", importPlaceholder: "Paste text here...\n(Lines = Rows, Tabs/Commas = Columns)",
+                share: "[ Share Link ]", shareTitle: "Share your table", shareMsg: "Copy this link to share your setup with others:",
+                close: "[ Close ]", copy: "[ Copy ]", copied: "[ Copied! ]",
+                errTitle: "Error", errSave: "Failed to save table to server.", errLoad: "Failed to load shared table."
+            },
+            ru: {
+                title: "Табличка мнений о корабликах",
+                love: "Любовь", like: "Нравится", platonic: "Платоника", 
+                neutral: "Нейтрально", dislike: "Не нравится", hate: "Ненависть",
+                download: "[ Скачать ]", reset: "[ Сброс ]", saving: "Сохраняем...",
+                labelLang: "Язык:", labelTheme: "Тема:", labelEditNames: "Названия маркеров:",
+                placeholder1: "+ Маркер 7", placeholder2: "+ Маркер 8",
+                editTable: "[ Редактировать ]", doneEditing: "[ Готово ]",
+                addRow: "[ + Ряд ]", removeRow: "[ - Ряд ]", addCol: "[ + Столбец ]", removeCol: "[ - Столбец ]",
+                importData: "[ Импорт ]", importLabel: "Импорт данных:", importPlaceholder: "Вставьте текст сюда...\n(Строки = Ряды, Табы/Запятые = Столбцы)",
+                share: "[ Поделиться ]", shareTitle: "Поделиться таблицей", shareMsg: "Скопируйте ссылку, чтобы поделиться своей версией:",
+                close: "[ Закрыть ]", copy: "[ Копировать ]", copied: "[ Скопировано! ]",
+                errTitle: "Ошибка", errSave: "Не удалось сохранить таблицу.", errLoad: "Не удалось загрузить чужую таблицу."
+            },
+            ua: {
+                title: "Табличка оцінки корабликів",
+                love: "Обожню", like: "Подобається", platonic: "Платонічно", 
+                neutral: "Нейтрально", dislike: "Не подобається", hate: "Ненавиджу",
+                download: "[ Завантажити ]", reset: "[ Скинути ]", saving: "Зберігаємо...",
+                labelLang: "Мова:", labelTheme: "Тема:", labelEditNames: "Назви маркерів:",
+                placeholder1: "+ Маркер 7", placeholder2: "+ Маркер 8",
+                editTable: "[ Редагувати ]", doneEditing: "[ Готово ]",
+                addRow: "[ + Ряд ]", removeRow: "[ - Ряд ]", addCol: "[ + Стовпець ]", removeCol: "[ - Стовпець ]",
+                importData: "[ Імпорт ]", importLabel: "Імпорт даних:", importPlaceholder: "Вставте текст сюди...\n(Рядки = Ряди, Таби/Коми = Стовпці)",
+                share: "[ Поділитися ]", shareTitle: "Поділитися таблицею", shareMsg: "Скопіюйте це посилання, щоб поділитися з іншими:",
+                close: "[ Закрити ]", copy: "[ Копіювати ]", copied: "[ Скопійовано! ]",
+                errTitle: "Помилка", errSave: "Не вдалося зберегти таблицю.", errLoad: "Не вдалося завантажити чужу таблицю."
+            }
+        };
+
+        // --- ДАНІ ТЕМ ---
+        const themes = {
+            typewriter: {
+                vars: {
+                    '--bg-body': '#e0ddd5', '--bg-paper': '#fdfaf6',
+                    '--text-main': '#111111', '--border-main': '#111111',
+                    '--btn-bg': '#ffffff', '--btn-text': '#111111',
+                    '--btn-hover': '#f0f0f0', '--btn-active': '#111111', '--btn-active-text': '#ffffff'
+                },
+                colors: {
+                    love: '#d9534f', like: '#f0ad4e', platonic: '#e4d836',
+                    neutral: '#8fbc8f', dislike: '#5bc0de', hate: '#9c66a4', 
+                    custom1: '#75b79e', custom2: '#e3a869', default: 'transparent'
+                }
+            },
+            pastel: {
+                vars: {
+                    '--bg-body': '#fdf5e6', '--bg-paper': '#ffffff',
+                    '--text-main': '#5d576b', '--border-main': '#d4c4fb',
+                    '--btn-bg': '#fcf9ff', '--btn-text': '#5d576b',
+                    '--btn-hover': '#f2ebff', '--btn-active': '#d4c4fb', '--btn-active-text': '#5d576b'
+                },
+                colors: {
+                    love: '#ffb3ba', like: '#ffdfba', platonic: '#ffffba',
+                    neutral: '#baffc9', dislike: '#bae1ff', hate: '#e6ccff', 
+                    custom1: '#e2f0cb', custom2: '#ffdac1', default: 'transparent'
+                }
+            },
+            dark_academia: {
+                vars: {
+                    '--bg-body': '#1a1a1a', '--bg-paper': '#2b2a27',
+                    '--text-main': '#d4c8b8', '--border-main': '#4a453d',
+                    '--btn-bg': '#363430', '--btn-text': '#d4c8b8',
+                    '--btn-hover': '#4a453d', '--btn-active': '#5c554a', '--btn-active-text': '#fdfaf6'
+                },
+                colors: {
+                    love: '#722f37', like: '#a66d3a', platonic: '#a89f68',
+                    neutral: '#4f5e4d', dislike: '#46596b', hate: '#56425c', 
+                    custom1: '#3e4a41', custom2: '#6b5b53', default: 'transparent'
+                }
+            },
+            custom: {
+                vars: {
+                    '--bg-body': '#e0ddd5', '--bg-paper': '#ffffff',
+                    '--text-main': '#333333', '--border-main': '#333333',
+                    '--btn-bg': '#f9f9f9', '--btn-text': '#333333',
+                    '--btn-hover': '#e9e9e9', '--btn-active': '#333333', '--btn-active-text': '#ffffff'
+                },
+                colors: { // Ці значення будуть оновлюватись з колор-пікерів
+                    love: '#ff4d4d', like: '#ffa64d', platonic: '#ffff4d',
+                    neutral: '#4dff4d', dislike: '#4dffff', hate: '#a64dff', 
+                    custom1: '#ff66b2', custom2: '#66ccff', default: 'transparent'
+                }
+            }
+        };
+
+        // Словники перекладу імен
+        const names = {
+            "remus": { en: "remus", ru: "римус", ua: "ремус" },
+            "sirius": { en: "sirius", ru: "сириус", ua: "сіріус" },
+            "james": { en: "james", ru: "джеймс", ua: "джеймс" },
+            "lily": { en: "lily", ru: "лили", ua: "лілі" },
+            "peter": { en: "peter", ru: "питер", ua: "пітер" },
+            "regulus": { en: "regulus", ru: "регулус", ua: "регулус" },
+            "barty": { en: "barty", ru: "барти", ua: "барті" },
+            "severus": { en: "severus", ru: "северус", ua: "северус" },
+            "evan": { en: "evan", ru: "эван", ua: "еван" },
+            "sybill": { en: "sybill", ru: "сивилла", ua: "сивілла" },
+            "gilderoy": { en: "gilderoy", ru: "гилдерой", ua: "гілдерой" },
+            "kingsley": { en: "kingsley", ru: "кингсли", ua: "кінгслі" },
+            "marlene": { en: "marlene", ru: "марлин", ua: "марлін" },
+            "pandora": { en: "pandora", ru: "пандора", ua: "пандора" },
+            "mary": { en: "mary", ru: "мэри", ua: "мері" },
+            "dorcas": { en: "dorcas", ru: "доркас", ua: "доркас" },
+            "narcissa": { en: "narcissa", ru: "нарцисса", ua: "нарциса" },
+            "lucius": { en: "lucius", ru: "люциус", ua: "луціус" },
+            "alice": { en: "alice", ru: "алиса", ua: "аліса" },
+            "frank": { en: "frank", ru: "фрэнк", ua: "френк" },
+            "bellatrix": { en: "bellatrix", ru: "беллатриса", ua: "белатриса" },
+            "rita": { en: "rita", ru: "рита", ua: "рита" },
+            "ted": { en: "ted", ru: "тед", ua: "тед" },
+            "andromeda": { en: "andromeda", ru: "андромеда", ua: "андромеда" }
+        };
+
+        const shipsData = [
+            ["Regulus Black/James Potter", "Regulus Black/Remus Lupin", "Regulus Black/Barty Crouch Jr.", "Regulus Black/Sirius Black", "Regulus Black/Severus Snape", "Regulus Black/Harry Potter", "Regulus Black/Hermione Granger"],
+            ["Regulus Black/Lily Evans Potter", "Regulus Black/Tom Riddle", "James Potter/Lily Evans Potter", "Lily Evans Potter/Severus Snape", "Narcissa Black Malfoy/Lily Evans Potter", "Sirius Black/Lily Evans Potter", "Remus Lupin/Lily Evans Potter"],
+            ["Harry Potter/Lily Evans Potter", "Barty Crouch Jr./Lily Evans Potter", "Bellatrix Black Lestrange/Lily Evans Potter", "Lily Evans Potter/Tom Riddle | Voldemort", "Lucius Malfoy/Lily Evans Potter", "Lily Evans Potter/Tom Riddle", "Hermione Granger/Lily Evans Potter"],
+            ["Sirius Black/Remus Lupin", "Remus Lupin/Severus Snape", "Remus Lupin/Nymphadora Tonks", "Hermione Granger/Remus Lupin", "Remus Lupin/James Potter", "Remus Lupin/Harry Potter", "Remus Lupin/Lucius Malfoy"],
+            ["Remus Lupin/Draco Malfoy", "Fenrir Greyback/Remus Lupin", "James Potter/Severus Snape", "Sirius Black/James Potter", "Hermione Granger/James Potter", "Sirius Black/Severus Snape", "Sirius Black/Hermione Granger"],
+            ["Sirius Black/Harry Potter", "Sirius Black/Lucius Malfoy", "Sirius Black/Draco Malfoy", "Harry Potter/Severus Snape", "Hermione Granger/Severus Snape", "Lucius Malfoy/Severus Snape", "Draco Malfoy/Severus Snape"],
+            ["Tom Riddle/Severus Snape", "Narcissa Black Malfoy/Severus Snape", "Severus Snape/Voldemort", "James Potter/Peter Pettigrew", "Lily Evans Potter/Peter Pettigrew", "Peter Pettigrew/Regulus Black", "Peter Pettigrew/Remus Lupin"],
+            ["Peter Pettigrew/Severus Snape", "Peter Pettigrew/Sirius Black", "Lucius Malfoy/Narcissa Black Malfoy", "Bellatrix Black Lestrange/Severus Snape", "Bellatrix Black Lestrange/Rita Skeeter", "Bellatrix Black Lestrange/Sirius Black", "Barty Crouch Jr./Severus Snape"]
+        ];
+
+        const stateOrder = ['default', 'love', 'like', 'platonic', 'neutral', 'dislike', 'hate', 'custom1', 'custom2'];
+        let activeStates = [0, 1, 2, 3, 4, 5, 6]; 
+        let currentLang = 'en';
+        let currentTheme = 'typewriter';
+        let activeBrushIndex = 0; 
+        let isEditMode = false;
+        const table = document.getElementById('ship-table');
+        const root = document.documentElement;
+
+        // Обробка введення для кастомних маркерів та пресетів
+        function setupMarkerNames() {
+            // Налаштування для базових (пресетних) маркерів
+            const presets = ['love', 'like', 'platonic', 'neutral', 'dislike', 'hate'];
+            presets.forEach(key => {
+                const input = document.getElementById(`input-name-${key}`);
+                input.addEventListener('input', () => {
+                    const val = input.value.trim() || uiText[currentLang][key]; // Якщо пусто, повертаємо дефолтне значення
+                    document.getElementById(`ui-${key}`).textContent = val;
+                    document.getElementById(`label-custom-${key}`).textContent = val;
+                    updateModeHint();
+                });
+            });
+
+            // Налаштування для 2-х додаткових (кастомних) маркерів
+            const i1 = document.getElementById('input-custom1');
+            const i2 = document.getElementById('input-custom2');
+            const l1 = document.getElementById('leg-custom1');
+            const l2 = document.getElementById('leg-custom2');
+            const u1 = document.getElementById('ui-custom1');
+            const u2 = document.getElementById('ui-custom2');
+            const pg1 = document.getElementById('picker-group-custom1');
+            const pg2 = document.getElementById('picker-group-custom2');
+            const pl1 = document.getElementById('label-custom-custom1');
+            const pl2 = document.getElementById('label-custom-custom2');
+
+            function updateMarker(inputElem, legendElem, uiElem, stateIndex, pickerGroup, pickerLabel) {
+                const val = inputElem.value.trim();
+                if(val) {
+                    legendElem.style.display = 'flex';
+                    uiElem.textContent = val;
+                    if(!activeStates.includes(stateIndex)) activeStates.push(stateIndex);
+                    activeStates.sort((a, b) => a - b);
+                    
+                    pickerLabel.textContent = val;
+                    if(currentTheme === 'custom') pickerGroup.style.display = 'flex';
+                } else {
+                    legendElem.style.display = 'none';
+                    activeStates = activeStates.filter(s => s !== stateIndex);
+                    
+                    if(activeBrushIndex === stateIndex) setActiveBrush(0); // Скинути пензель, якщо маркер видалено
+                    pickerGroup.style.display = 'none';
+                }
+                updateModeHint();
+            }
+
+            i1.addEventListener('input', () => updateMarker(i1, l1, u1, 7, pg1, pl1));
+            i2.addEventListener('input', () => updateMarker(i2, l2, u2, 8, pg2, pl2));
+        }
+
+        // Обробник кліку по комірці
+        function cellClickHandler(e) {
+            const cell = e.currentTarget;
+            if (isEditMode) return; // У режимі редагування клік не змінює колір, а дає фокус для друку
+            
+            if (activeBrushIndex === 0) {
+                // Cycle mode
+                let currentIndex = parseInt(cell.dataset.stateIndex);
+                let activeIdx = activeStates.indexOf(currentIndex);
+                if(activeIdx === -1) activeIdx = 0;
+                
+                let nextActiveIdx = (activeIdx + 1) % activeStates.length;
+                cell.dataset.stateIndex = activeStates[nextActiveIdx];
+            } else {
+                // Paint mode
+                let currentIndex = parseInt(cell.dataset.stateIndex);
+                if (currentIndex === activeBrushIndex) {
+                    cell.dataset.stateIndex = 0; // Erase
+                } else {
+                    cell.dataset.stateIndex = activeBrushIndex; // Paint
+                }
+            }
+            updateCellColor(cell);
+        }
+
+        // Ініціалізація початкової таблиці
+        function initTable() {
+            table.innerHTML = '';
+            shipsData.forEach((rowData) => {
+                const tr = document.createElement('tr');
+                rowData.forEach((shipName) => {
+                    const td = document.createElement('td');
+                    td.dataset.stateIndex = 0; 
+                    td.textContent = shipName; // Записуємо початковий текст
+                    td.addEventListener('click', cellClickHandler);
+                    tr.appendChild(td);
+                });
+                table.appendChild(tr);
+            });
+        }
+
+        // Оновлення кольору конкретної клітинки базуючись на темі
+        function updateCellColor(cell) {
+            const stateName = stateOrder[cell.dataset.stateIndex];
+            cell.style.backgroundColor = themes[currentTheme].colors[stateName];
+        }
+
+        // Оновлення кольорів всієї таблиці (при зміні теми)
+        function refreshTableColors() {
+            const cells = table.getElementsByTagName('td');
+            for (let cell of cells) {
+                updateCellColor(cell);
+            }
+            
+            // Оновлюємо кольори в легенді CSS змінними
+            root.style.setProperty('--color-love', themes[currentTheme].colors.love);
+            root.style.setProperty('--color-like', themes[currentTheme].colors.like);
+            root.style.setProperty('--color-platonic', themes[currentTheme].colors.platonic);
+            root.style.setProperty('--color-neutral', themes[currentTheme].colors.neutral);
+            root.style.setProperty('--color-dislike', themes[currentTheme].colors.dislike);
+            root.style.setProperty('--color-hate', themes[currentTheme].colors.hate);
+            root.style.setProperty('--color-custom1', themes[currentTheme].colors.custom1);
+            root.style.setProperty('--color-custom2', themes[currentTheme].colors.custom2);
+        }
+
+        // Зміна теми
+        function setTheme(themeName) {
+            currentTheme = themeName;
+            
+            // Оновлюємо UI кнопок тем
+            document.querySelectorAll('[id^="btn-theme-"]').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`btn-theme-${themeName === 'dark_academia' ? 'dark' : themeName}`).classList.add('active');
+
+            // Показуємо/ховаємо налаштування кастомної теми
+            const customPanel = document.getElementById('custom-palette-settings');
+            customPanel.style.display = themeName === 'custom' ? 'flex' : 'none';
+            
+            // Оновлюємо видимість кастомних пікерів
+            if(themeName === 'custom') {
+                document.getElementById('picker-group-custom1').style.display = document.getElementById('input-custom1').value.trim() ? 'flex' : 'none';
+                document.getElementById('picker-group-custom2').style.display = document.getElementById('input-custom2').value.trim() ? 'flex' : 'none';
+            }
+
+            // Застосовуємо CSS змінні теми
+            const themeVars = themes[themeName].vars;
+            for (const [key, value] of Object.entries(themeVars)) {
+                root.style.setProperty(key, value);
+            }
+
+            refreshTableColors();
+        }
+
+        // Слухачі для кастомних кольорів
+        document.querySelectorAll('input[type="color"]').forEach(input => {
+            input.addEventListener('input', function() {
+                if (currentTheme === 'custom') {
+                    const stateName = this.id.replace('color-', '');
+                    themes.custom.colors[stateName] = this.value;
+                    refreshTableColors();
+                }
+            });
+        });
+
+        // Функція для розумного перекладу імен (залишає кастомні імена як є)
+        function translateName(currentName, targetLang) {
+            const query = currentName.toLowerCase().trim();
+            for (const key in names) {
+                const variants = names[key];
+                if (query === variants.en || query === variants.ru || query === variants.ua) {
+                    return variants[targetLang];
+                }
+            }
+            return currentName; // Якщо не знайдено, не чіпаємо (для кастомних шипів)
+        }
+
+        // Оновлення текстів залежно від мови
+        function setLang(lang) {
+            currentLang = lang;
+            
+            // Оновлюємо активну кнопку мови
+            document.querySelectorAll('[id^="btn-"]').forEach(btn => {
+                if(btn.id.startsWith('btn-en') || btn.id.startsWith('btn-ru') || btn.id.startsWith('btn-ua')) {
+                    btn.classList.remove('active');
+                }
+            });
+            document.getElementById(`btn-${lang}`).classList.add('active');
+
+            // Оновлюємо значення в інпутах (це оновить і кастомні назви на нову мову)
+            const presets = ['love', 'like', 'platonic', 'neutral', 'dislike', 'hate'];
+            presets.forEach(key => {
+                const input = document.getElementById(`input-name-${key}`);
+                input.value = uiText[lang][key];
+                document.getElementById(`ui-${key}`).textContent = input.value;
+                document.getElementById(`label-custom-${key}`).textContent = input.value;
+            });
+
+            // Оновлюємо UI текст
+            document.getElementById('ui-title').innerHTML = uiText[lang].title;
+            document.getElementById('download-btn').textContent = uiText[lang].download;
+            document.getElementById('reset-btn').textContent = uiText[lang].reset;
+            document.getElementById('label-lang').textContent = uiText[lang].labelLang;
+            document.getElementById('label-theme').textContent = uiText[lang].labelTheme;
+            document.getElementById('label-edit-names').textContent = uiText[lang].labelEditNames;
+            document.getElementById('input-custom1').placeholder = uiText[lang].placeholder1;
+            document.getElementById('input-custom2').placeholder = uiText[lang].placeholder2;
+            
+            document.getElementById('edit-mode-btn').textContent = isEditMode ? uiText[lang].doneEditing : uiText[lang].editTable;
+            document.getElementById('btn-add-row').textContent = uiText[lang].addRow;
+            document.getElementById('btn-rm-row').textContent = uiText[lang].removeRow;
+            document.getElementById('btn-add-col').textContent = uiText[lang].addCol;
+            document.getElementById('btn-rm-col').textContent = uiText[lang].removeCol;
+            document.getElementById('share-btn').textContent = uiText[lang].share;
+            
+            document.getElementById('modal-close-btn').textContent = uiText[lang].close;
+            document.getElementById('modal-copy-btn').textContent = uiText[lang].copy;
+            
+            document.getElementById('btn-import-data').textContent = uiText[lang].importData;
+            document.getElementById('label-import').textContent = uiText[lang].importLabel;
+            document.getElementById('import-textarea').placeholder = uiText[lang].importPlaceholder;
+            
+            updateModeHint();
+
+            // Оновлюємо комірки таблиці, зберігаючи всі кастомні редагування
+            const cells = table.getElementsByTagName('td');
+            for (let cell of cells) {
+                // Використовуємо textContent, щоб ігнорувати старі <wbr> при читанні
+                const parts = cell.textContent.split('/');
+                const translatedParts = parts.map(p => translateName(p, lang));
+                // Збираємо назад, але додаємо <wbr> (м'який перенос) після слешу
+                cell.innerHTML = translatedParts.join('/<wbr>');
+            }
+        }
+
+        // Скидання кольорів
+        document.getElementById('reset-btn').addEventListener('click', () => {
+            const cells = table.getElementsByTagName('td');
+            for (let cell of cells) {
+                cell.dataset.stateIndex = 0;
+                updateCellColor(cell);
+            }
+        });
+        
+        // --- Логіка активної "пензля" (Mode 2 & 3) ---
+        
+        function setActiveBrush(index) {
+            activeBrushIndex = index;
+            
+            // Оновлюємо UI легенди
+            document.querySelectorAll('.legend-item').forEach(item => item.classList.remove('active-brush'));
+            if (index > 0) {
+                document.querySelector(`.legend-item[data-state="${index}"]`).classList.add('active-brush');
+            }
+            
+            updateModeHint();
+        }
+
+        function updateModeHint() {
+            const hintEl = document.getElementById('ui-mode-hint');
+            if (activeBrushIndex === 0) {
+                if(currentLang === 'ua') hintEl.textContent = "Режим: Циклічний (Натисніть на легенду або цифри 1-8, щоб малювати певним кольором)";
+                else if(currentLang === 'ru') hintEl.textContent = "Режим: Циклический (Нажмите на легенду или цифры 1-8 для рисования конкретным цветом)";
+                else hintEl.textContent = "Mode: Cycle colors (Click a legend item or press 1-8 to paint specific colors)";
+            } else {
+                let colorName = "";
+                if(activeBrushIndex === 7) colorName = document.getElementById('input-custom1').value;
+                else if(activeBrushIndex === 8) colorName = document.getElementById('input-custom2').value;
+                else {
+                    const stateKey = stateOrder[activeBrushIndex];
+                    colorName = document.getElementById(`input-name-${stateKey}`).value.trim() || uiText[currentLang][stateKey];
+                }
+                
+                if(currentLang === 'ua') hintEl.textContent = `Режим: Малювання (${colorName}). Натисніть Esc для скасування.`;
+                else if(currentLang === 'ru') hintEl.textContent = `Режим: Рисование (${colorName}). Нажмите Esc для отмены.`;
+                else hintEl.textContent = `Mode: Painting (${colorName}). Press Esc to cancel.`;
+            }
+        }
+
+        // Обробка кліків по легенді (Mode 2)
+        document.querySelectorAll('.legend-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const state = parseInt(this.dataset.state);
+                // Якщо клікнули на вже активний пензель - вимикаємо його (повертаємось до циклічного режиму)
+                if (activeBrushIndex === state) {
+                    setActiveBrush(0);
+                } else {
+                    setActiveBrush(state);
+                }
+            });
+        });
+
+        // Обробка клавіатури (Mode 3)
+        document.addEventListener('keydown', function(event) {
+            // Клавіші 1-8
+            if (event.key >= '1' && event.key <= '8') {
+                const state = parseInt(event.key);
+                // Дозволяємо вибір клавішами 7 і 8 тільки якщо вони активні
+                if(state < 7 || activeStates.includes(state)) {
+                    setActiveBrush(state);
+                }
+            }
+            // Escape для скидання в циклічний режим
+            if (event.key === 'Escape') {
+                setActiveBrush(0);
+            }
+        });
+
+        // --- ЛОГІКА РЕДАГУВАННЯ ТАБЛИЦІ ---
+
+        document.getElementById('edit-mode-btn').addEventListener('click', () => {
+            isEditMode = !isEditMode;
+            const btn = document.getElementById('edit-mode-btn');
+            const controls = document.getElementById('edit-table-controls');
+            const cells = table.getElementsByTagName('td');
+
+            if (isEditMode) {
+                btn.textContent = uiText[currentLang].doneEditing;
+                btn.classList.add('active');
+                controls.style.display = 'flex';
+                for(let cell of cells) cell.setAttribute('contenteditable', 'true');
+                setActiveBrush(0); // Вимикаємо малювання під час редагування
+            } else {
+                btn.textContent = uiText[currentLang].editTable;
+                btn.classList.remove('active');
+                controls.style.display = 'none';
+                for(let cell of cells) cell.setAttribute('contenteditable', 'false');
+            }
+        });
+
+        function addRow() {
+            const colsCount = table.querySelector('tr')?.children.length || 4;
+            const tr = document.createElement('tr');
+            for(let i=0; i < colsCount; i++) {
+                const td = document.createElement('td');
+                td.dataset.stateIndex = 0;
+                td.textContent = "new/ship";
+                td.setAttribute('contenteditable', 'true');
+                td.addEventListener('click', cellClickHandler);
+                tr.appendChild(td);
+            }
+            table.appendChild(tr);
+            refreshTableColors();
+        }
+
+        function removeRow() {
+            if(table.querySelectorAll('tr').length > 1) {
+                table.removeChild(table.lastElementChild);
+            }
+        }
+
+        function addColumn() {
+            const rows = table.querySelectorAll('tr');
+            rows.forEach(tr => {
+                const td = document.createElement('td');
+                td.dataset.stateIndex = 0;
+                td.textContent = "new/ship";
+                td.setAttribute('contenteditable', 'true');
+                td.addEventListener('click', cellClickHandler);
+                tr.appendChild(td);
+            });
+            refreshTableColors();
+        }
+
+        function removeColumn() {
+            const rows = table.querySelectorAll('tr');
+            if(rows[0] && rows[0].children.length > 1) {
+                rows.forEach(tr => {
+                    tr.removeChild(tr.lastElementChild);
+                });
+            }
+        }
+
+        // Обробник імпорту тексту
+        document.getElementById('btn-import-data').addEventListener('click', () => {
+            const text = document.getElementById('import-textarea').value.trim();
+            if (!text) return;
+
+            const lines = text.split('\n');
+            if (lines.length === 0) return;
+
+            // Очищаємо стару таблицю
+            table.innerHTML = '';
+            
+            lines.forEach(line => {
+                const tr = document.createElement('tr');
+                // Розбиваємо рядок на колонки по табуляції або комі
+                let cols = [line];
+                if (line.includes('\t')) {
+                    cols = line.split('\t');
+                } else if (line.includes(',')) {
+                    cols = line.split(',');
+                }
+                
+                cols.forEach(colData => {
+                    const td = document.createElement('td');
+                    td.dataset.stateIndex = 0;
+                    td.textContent = colData.trim();
+                    td.setAttribute('contenteditable', 'true');
+                    td.addEventListener('click', cellClickHandler);
+                    tr.appendChild(td);
+                });
+                table.appendChild(tr);
+            });
+            refreshTableColors();
+            document.getElementById('import-textarea').value = ''; // Очищаємо поле після успішного імпорту
+        });
+
+        // Завантаження картинки
+        document.getElementById('download-btn').addEventListener('click', () => {
+            const captureArea = document.getElementById('capture-area');
+            const originalBtnText = document.getElementById('download-btn').textContent;
+            
+            document.getElementById('download-btn').textContent = `[ ${uiText[currentLang].saving} ]`;
+
+            html2canvas(captureArea, {
+                scale: 2,
+                backgroundColor: themes[currentTheme].vars['--bg-paper'],
+                useCORS: true // Дозволяє завантажувати зовнішні шрифти (Google Fonts) на скріншот
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `ships_opinion_${currentTheme}_${currentLang}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+                
+                document.getElementById('download-btn').textContent = originalBtnText;
+            }).catch(err => {
+                console.error('Screenshot error:', err);
+                showModal(uiText[currentLang].errTitle, "Photo save error. Try manual screenshot.");
+                document.getElementById('download-btn').textContent = originalBtnText;
+            });
+        });
+
+        // --- ЛОГІКА ХМАРНОГО ЗБЕРЕЖЕННЯ (FIREBASE) ТА МОДАЛЬНИХ ВІКОН ---
+        
+        function showModal(title, message, link = null) {
+            document.getElementById('modal-title').textContent = title;
+            document.getElementById('modal-message').textContent = message;
+            
+            const linkInput = document.getElementById('modal-link');
+            const copyBtn = document.getElementById('modal-copy-btn');
+            
+            if (link) {
+                linkInput.style.display = 'block';
+                linkInput.value = link;
+                copyBtn.style.display = 'block';
+                
+                copyBtn.onclick = () => {
+                    linkInput.select();
+                    document.execCommand('copy');
+                    copyBtn.textContent = uiText[currentLang].copied;
+                    setTimeout(() => copyBtn.textContent = uiText[currentLang].copy, 2000);
+                };
+            } else {
+                linkInput.style.display = 'none';
+                copyBtn.style.display = 'none';
+            }
+            
+            document.getElementById('custom-modal').style.display = 'flex';
+        }
+
+        document.getElementById('modal-close-btn').addEventListener('click', () => {
+            document.getElementById('custom-modal').style.display = 'none';
+        });
+
+        document.getElementById('share-btn').addEventListener('click', async () => {
+            if (!currentUser) {
+                showModal(uiText[currentLang].errTitle, "Cloud saving is initializing. Please wait a second and try again.");
+                return;
+            }
+
+            const originalBtnText = document.getElementById('share-btn').textContent;
+            document.getElementById('share-btn').textContent = `[ ${uiText[currentLang].saving} ]`;
+
+            try {
+                // Збираємо дані таблиці
+                const rowsData = [];
+                const tableRows = table.querySelectorAll('tr');
+                tableRows.forEach(tr => {
+                    const row = [];
+                    tr.querySelectorAll('td').forEach(td => {
+                        row.push({
+                            text: td.textContent,
+                            colorIndex: parseInt(td.dataset.stateIndex || 0)
+                        });
+                    });
+                    rowsData.push(row);
+                });
+
+                const payload = {
+                    theme: currentTheme,
+                    lang: currentLang,
+                    customColors: themes.custom.colors,
+                    markerNames: {
+                        love: document.getElementById('input-name-love').value,
+                        like: document.getElementById('input-name-like').value,
+                        platonic: document.getElementById('input-name-platonic').value,
+                        neutral: document.getElementById('input-name-neutral').value,
+                        dislike: document.getElementById('input-name-dislike').value,
+                        hate: document.getElementById('input-name-hate').value,
+                        custom1: document.getElementById('input-custom1').value,
+                        custom2: document.getElementById('input-custom2').value
+                    },
+                    tableData: rowsData,
+                    createdAt: new Date().toISOString(),
+                    authorId: currentUser.uid
+                };
+
+                const tableId = crypto.randomUUID();
+                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'tables', tableId);
+                await setDoc(docRef, payload);
+
+                // Формуємо посилання для шерингу
+                const url = new URL(window.location.href);
+                url.searchParams.set('id', tableId);
+                
+                showModal(uiText[currentLang].shareTitle, uiText[currentLang].shareMsg, url.toString());
+
+            } catch (err) {
+                console.error("Save error:", err);
+                showModal(uiText[currentLang].errTitle, uiText[currentLang].errSave);
+            } finally {
+                document.getElementById('share-btn').textContent = originalBtnText;
+            }
+        });
+
+        async function loadSharedTable() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const tableId = urlParams.get('id');
+            if (!tableId || !currentUser) return;
+
+            try {
+                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'tables', tableId);
+                const docSnap = await getDoc(docRef);
+                
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    
+                    // Відновлюємо мову
+                    if (data.lang) setLang(data.lang);
+                    
+                    // Відновлюємо кастомні кольори
+                    if (data.customColors) {
+                        themes.custom.colors = data.customColors;
+                        Object.keys(data.customColors).forEach(key => {
+                            const picker = document.getElementById('color-' + key);
+                            if (picker) picker.value = data.customColors[key];
+                        });
+                    }
+                    
+                    // Відновлюємо тему
+                    if (data.theme) setTheme(data.theme);
+
+                    // Відновлюємо імена маркерів
+                    if (data.markerNames) {
+                        Object.keys(data.markerNames).forEach(key => {
+                            const inputId = key.startsWith('custom') ? 'input-' + key : 'input-name-' + key;
+                            const input = document.getElementById(inputId);
+                            if (input && data.markerNames[key]) {
+                                input.value = data.markerNames[key];
+                                input.dispatchEvent(new Event('input')); 
+                            }
+                        });
+                    }
+
+                    // Перебудовуємо таблицю
+                    if (data.tableData) {
+                        table.innerHTML = '';
+                        data.tableData.forEach(row => {
+                            const tr = document.createElement('tr');
+                            row.forEach(cellData => {
+                                const td = document.createElement('td');
+                                td.dataset.stateIndex = cellData.colorIndex;
+                                td.textContent = cellData.text;
+                                td.setAttribute('contenteditable', isEditMode ? 'true' : 'false');
+                                td.addEventListener('click', cellClickHandler);
+                                updateCellColor(td);
+                                tr.appendChild(td);
+                            });
+                            table.appendChild(tr);
+                        });
+                    }
+                }
+            } catch (err) {
+                console.error("Load error:", err);
+                showModal(uiText[currentLang].errTitle, uiText[currentLang].errLoad);
+            }
+        }
+
+        // Експортуємо функції у глобальну область видимості (через type="module")
+        window.setLang = setLang;
+        window.setTheme = setTheme;
+        window.addRow = addRow;
+        window.removeRow = removeRow;
+        window.addColumn = addColumn;
+        window.removeColumn = removeColumn;
+
+        // Запуск
+        setupMarkerNames();
+        initTable();
+        setTheme('typewriter'); // Застосовуємо тему за замовчуванням
+        setLang('en'); // Мова за замовчуванням
+    </script>
+</body>
+</html>
