@@ -484,38 +484,7 @@
         </div>
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        // --- FIREBASE ІНІЦІАЛІЗАЦІЯ ---
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'marauders-ships-app';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-        
-        let app, db, auth, currentUser;
-        
-        if (Object.keys(firebaseConfig).length > 0) {
-            app = initializeApp(firebaseConfig);
-            db = getFirestore(app);
-            auth = getAuth(app);
-            initAuth();
-        }
-
-        async function initAuth() {
-            try {
-                if (typeof __initial_auth_token !== 'undefined') {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
-                currentUser = auth.currentUser;
-                loadSharedTable();
-            } catch (error) {
-                console.error("Auth error:", error);
-            }
-        }
-
+    <script>
         // --- ДАНІ ЛОКАЛІЗАЦІЇ ---
         const uiText = {
             en: {
@@ -530,7 +499,7 @@
                 importData: "[ Import ]", importLabel: "Import Data:", importPlaceholder: "Paste text here...\n(Lines = Rows, Tabs/Commas = Columns)",
                 share: "[ Share Link ]", shareTitle: "Share your table", shareMsg: "Copy this link to share your setup with others:",
                 close: "[ Close ]", copy: "[ Copy ]", copied: "[ Copied! ]",
-                errTitle: "Error", errSave: "Failed to save table to server.", errLoad: "Failed to load shared table."
+                errTitle: "Error", errSave: "Failed to generate link.", errLoad: "Failed to load shared table."
             },
             ru: {
                 title: "Табличка мнений о корабликах",
@@ -544,7 +513,7 @@
                 importData: "[ Импорт ]", importLabel: "Импорт данных:", importPlaceholder: "Вставьте текст сюда...\n(Строки = Ряды, Табы/Запятые = Столбцы)",
                 share: "[ Поделиться ]", shareTitle: "Поделиться таблицей", shareMsg: "Скопируйте ссылку, чтобы поделиться своей версией:",
                 close: "[ Закрыть ]", copy: "[ Копировать ]", copied: "[ Скопировано! ]",
-                errTitle: "Ошибка", errSave: "Не удалось сохранить таблицу.", errLoad: "Не удалось загрузить чужую таблицу."
+                errTitle: "Ошибка", errSave: "Не удалось создать ссылку.", errLoad: "Не удалось загрузить чужую таблицу."
             },
             ua: {
                 title: "Табличка оцінки корабликів",
@@ -558,7 +527,7 @@
                 importData: "[ Імпорт ]", importLabel: "Імпорт даних:", importPlaceholder: "Вставте текст сюди...\n(Рядки = Ряди, Таби/Коми = Стовпці)",
                 share: "[ Поділитися ]", shareTitle: "Поділитися таблицею", shareMsg: "Скопіюйте це посилання, щоб поділитися з іншими:",
                 close: "[ Закрити ]", copy: "[ Копіювати ]", copied: "[ Скопійовано! ]",
-                errTitle: "Помилка", errSave: "Не вдалося зберегти таблицю.", errLoad: "Не вдалося завантажити чужу таблицю."
+                errTitle: "Помилка", errSave: "Не вдалося створити посилання.", errLoad: "Не вдалося завантажити чужу таблицю."
             }
         };
 
@@ -723,7 +692,7 @@
             
             if (activeBrushIndex === 0) {
                 // Cycle mode
-                let currentIndex = parseInt(cell.dataset.stateIndex);
+                let currentIndex = parseInt(cell.dataset.stateIndex || 0);
                 let activeIdx = activeStates.indexOf(currentIndex);
                 if(activeIdx === -1) activeIdx = 0;
                 
@@ -731,7 +700,7 @@
                 cell.dataset.stateIndex = activeStates[nextActiveIdx];
             } else {
                 // Paint mode
-                let currentIndex = parseInt(cell.dataset.stateIndex);
+                let currentIndex = parseInt(cell.dataset.stateIndex || 0);
                 if (currentIndex === activeBrushIndex) {
                     cell.dataset.stateIndex = 0; // Erase
                 } else {
@@ -759,7 +728,7 @@
 
         // Оновлення кольору конкретної клітинки базуючись на темі
         function updateCellColor(cell) {
-            const stateName = stateOrder[cell.dataset.stateIndex];
+            const stateName = stateOrder[cell.dataset.stateIndex || 0];
             cell.style.backgroundColor = themes[currentTheme].colors[stateName];
         }
 
@@ -1087,7 +1056,7 @@
             });
         });
 
-        // --- ЛОГІКА ХМАРНОГО ЗБЕРЕЖЕННЯ (FIREBASE) ТА МОДАЛЬНИХ ВІКОН ---
+        // --- ЛОГІКА URL ШЕРИНГУ ТА МОДАЛЬНИХ ВІКОН ---
         
         function showModal(title, message, link = null) {
             document.getElementById('modal-title').textContent = title;
@@ -1119,131 +1088,7 @@
             document.getElementById('custom-modal').style.display = 'none';
         });
 
-        document.getElementById('share-btn').addEventListener('click', async () => {
-            if (!currentUser) {
-                showModal(uiText[currentLang].errTitle, "Cloud saving is initializing. Please wait a second and try again.");
-                return;
-            }
-
-            const originalBtnText = document.getElementById('share-btn').textContent;
-            document.getElementById('share-btn').textContent = `[ ${uiText[currentLang].saving} ]`;
-
-            try {
-                // Збираємо дані таблиці
-                const rowsData = [];
-                const tableRows = table.querySelectorAll('tr');
-                tableRows.forEach(tr => {
-                    const row = [];
-                    tr.querySelectorAll('td').forEach(td => {
-                        row.push({
-                            text: td.textContent,
-                            colorIndex: parseInt(td.dataset.stateIndex || 0)
-                        });
-                    });
-                    rowsData.push(row);
-                });
-
-                const payload = {
-                    theme: currentTheme,
-                    lang: currentLang,
-                    customColors: themes.custom.colors,
-                    markerNames: {
-                        love: document.getElementById('input-name-love').value,
-                        like: document.getElementById('input-name-like').value,
-                        platonic: document.getElementById('input-name-platonic').value,
-                        neutral: document.getElementById('input-name-neutral').value,
-                        dislike: document.getElementById('input-name-dislike').value,
-                        hate: document.getElementById('input-name-hate').value,
-                        custom1: document.getElementById('input-custom1').value,
-                        custom2: document.getElementById('input-custom2').value
-                    },
-                    tableData: rowsData,
-                    createdAt: new Date().toISOString(),
-                    authorId: currentUser.uid
-                };
-
-                const tableId = crypto.randomUUID();
-                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'tables', tableId);
-                await setDoc(docRef, payload);
-
-                // Формуємо посилання для шерингу
-                const url = new URL(window.location.href);
-                url.searchParams.set('id', tableId);
-                
-                showModal(uiText[currentLang].shareTitle, uiText[currentLang].shareMsg, url.toString());
-
-            } catch (err) {
-                console.error("Save error:", err);
-                showModal(uiText[currentLang].errTitle, uiText[currentLang].errSave);
-            } finally {
-                document.getElementById('share-btn').textContent = originalBtnText;
-            }
-        });
-
-        async function loadSharedTable() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const tableId = urlParams.get('id');
-            if (!tableId || !currentUser) return;
-
-            try {
-                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'tables', tableId);
-                const docSnap = await getDoc(docRef);
-                
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    
-                    // Відновлюємо мову
-                    if (data.lang) setLang(data.lang);
-                    
-                    // Відновлюємо кастомні кольори
-                    if (data.customColors) {
-                        themes.custom.colors = data.customColors;
-                        Object.keys(data.customColors).forEach(key => {
-                            const picker = document.getElementById('color-' + key);
-                            if (picker) picker.value = data.customColors[key];
-                        });
-                    }
-                    
-                    // Відновлюємо тему
-                    if (data.theme) setTheme(data.theme);
-
-                    // Відновлюємо імена маркерів
-                    if (data.markerNames) {
-                        Object.keys(data.markerNames).forEach(key => {
-                            const inputId = key.startsWith('custom') ? 'input-' + key : 'input-name-' + key;
-                            const input = document.getElementById(inputId);
-                            if (input && data.markerNames[key]) {
-                                input.value = data.markerNames[key];
-                                input.dispatchEvent(new Event('input')); 
-                            }
-                        });
-                    }
-
-                    // Перебудовуємо таблицю
-                    if (data.tableData) {
-                        table.innerHTML = '';
-                        data.tableData.forEach(row => {
-                            const tr = document.createElement('tr');
-                            row.forEach(cellData => {
-                                const td = document.createElement('td');
-                                td.dataset.stateIndex = cellData.colorIndex;
-                                td.textContent = cellData.text;
-                                td.setAttribute('contenteditable', isEditMode ? 'true' : 'false');
-                                td.addEventListener('click', cellClickHandler);
-                                updateCellColor(td);
-                                tr.appendChild(td);
-                            });
-                            table.appendChild(tr);
-                        });
-                    }
-                }
-            } catch (err) {
-                console.error("Load error:", err);
-                showModal(uiText[currentLang].errTitle, uiText[currentLang].errLoad);
-            }
-        }
-
-        // Експортуємо функції у глобальну область видимості (через type="module")
+        // Експортуємо функції для кнопок HTML
         window.setLang = setLang;
         window.setTheme = setTheme;
         window.addRow = addRow;
@@ -1251,108 +1096,124 @@
         window.addColumn = addColumn;
         window.removeColumn = removeColumn;
 
-        // Запуск
-        setupMarkerNames();
-        initTable();
-        setTheme('typewriter'); // Застосовуємо тему за замовчуванням
-        setLang('en'); // Мова за замовчуванням
-
         // --- URL SHARING SYSTEM ---
 
-        // 1. Pack the current table into a shareable URL
         function generateShareLink() {
             try {
                 const tableData = [];
-                // Grab every row and cell
-                document.querySelectorAll('table tr').forEach(row => {
+                // Collect row and cell data
+                document.querySelectorAll('#ship-table tr').forEach(row => {
                     const rowData = [];
                     row.querySelectorAll('td').forEach(cell => {
                         rowData.push({
-                            text: cell.innerText || cell.textContent,
-                            colorClass: cell.className // Saves the painted color
+                            text: cell.textContent,
+                            stateIndex: parseInt(cell.dataset.stateIndex || 0)
                         });
                     });
                     tableData.push(rowData);
                 });
-        
+
                 // Grab custom legend names
-                const markers = Array.from(document.querySelectorAll('.legend-input')).map(input => input.value);
-        
-                // Pack it into a data object
+                const markerNames = {
+                    love: document.getElementById('input-name-love').value,
+                    like: document.getElementById('input-name-like').value,
+                    platonic: document.getElementById('input-name-platonic').value,
+                    neutral: document.getElementById('input-name-neutral').value,
+                    dislike: document.getElementById('input-name-dislike').value,
+                    hate: document.getElementById('input-name-hate').value,
+                    custom1: document.getElementById('input-custom1').value,
+                    custom2: document.getElementById('input-custom2').value
+                };
+
+                // Pack into a state object
                 const state = { 
                     grid: tableData, 
-                    markers: markers,
-                    theme: document.documentElement.getAttribute('data-theme')
+                    markerNames: markerNames,
+                    theme: currentTheme,
+                    lang: currentLang,
+                    customColors: themes.custom.colors
                 };
                 
-                // Convert to Base64 so it can be passed in a URL safely
+                // Convert to Base64 safely
                 const encodedState = btoa(encodeURIComponent(JSON.stringify(state)));
                 const shareUrl = window.location.origin + window.location.pathname + '?map=' + encodedState;
-        
-                // Give the user their link
-                prompt("Here is your shareable link! Copy it and send it to your friends:", shareUrl);
+
+                // Show in the custom modal
+                showModal(uiText[currentLang].shareTitle, uiText[currentLang].shareMsg, shareUrl);
             } catch (e) {
-                alert("Oops! Something went wrong while generating the link.");
+                showModal(uiText[currentLang].errTitle, uiText[currentLang].errSave);
                 console.error(e);
             }
         }
-        
-        // 2. Unpack the table if someone opens a shared link
+
         function loadSharedLink() {
             const urlParams = new URLSearchParams(window.location.search);
             const mapData = urlParams.get('map');
             
             if (mapData) {
                 try {
-                    // Decode the Base64 URL back into our data object
                     const state = JSON.parse(decodeURIComponent(atob(mapData)));
                     
-                    // Restore theme
-                    if (state.theme) {
-                        document.documentElement.setAttribute('data-theme', state.theme);
-                    }
-        
-                    // Restore legend markers
-                    if (state.markers) {
-                        const inputs = document.querySelectorAll('.legend-input');
-                        state.markers.forEach((val, index) => {
-                            if (inputs[index]) inputs[index].value = val;
+                    if (state.lang) setLang(state.lang);
+
+                    if (state.customColors) {
+                        themes.custom.colors = state.customColors;
+                        Object.keys(state.customColors).forEach(key => {
+                            const picker = document.getElementById('color-' + key);
+                            if (picker) picker.value = state.customColors[key];
                         });
                     }
-        
-                    // Restore the grid and ships
+
+                    if (state.theme) setTheme(state.theme);
+
+                    if (state.markerNames) {
+                        Object.keys(state.markerNames).forEach(key => {
+                            const inputId = key.startsWith('custom') ? 'input-' + key : 'input-name-' + key;
+                            const input = document.getElementById(inputId);
+                            if (input && state.markerNames[key]) {
+                                input.value = state.markerNames[key];
+                                input.dispatchEvent(new Event('input'));
+                            }
+                        });
+                    }
+
                     if (state.grid && state.grid.length > 0) {
-                        const tbody = document.querySelector('tbody') || document.querySelector('table');
-                        tbody.innerHTML = ''; // Clear default table
-                        
+                        table.innerHTML = '';
                         state.grid.forEach(rowData => {
                             const tr = document.createElement('tr');
                             rowData.forEach(cellData => {
                                 const td = document.createElement('td');
-                                td.innerText = cellData.text;
-                                td.className = cellData.colorClass; // Restores the saved colors
+                                td.dataset.stateIndex = cellData.stateIndex;
                                 
-                                // Re-attach the clicking function to the new cells 
-                                // IMPORTANT: Change 'toggleCellColor' to whatever your actual cell-click function is named!
-                                td.addEventListener('click', function(e) {
-                                    // Call your existing painting function here
-                                    handleCellClick(e); 
-                                });
+                                // Format logic for perfect wrapping
+                                const parts = cellData.text.split('/');
+                                const translatedParts = parts.map(p => translateName(p, state.lang || currentLang));
+                                td.innerHTML = translatedParts.join('/<wbr>');
                                 
+                                td.setAttribute('contenteditable', 'false');
+                                td.addEventListener('click', cellClickHandler);
+                                updateCellColor(td);
                                 tr.appendChild(td);
                             });
-                            tbody.appendChild(tr);
+                            table.appendChild(tr);
                         });
                     }
                 } catch (error) {
-                    alert("This share link seems to be broken or invalid.");
+                    showModal(uiText[currentLang].errTitle, uiText[currentLang].errLoad);
                     console.error(error);
                 }
             }
         }
-        
-        // 3. Check for a shared link as soon as the page loads
-        window.addEventListener('DOMContentLoaded', loadSharedLink);
+
+        // Attach listener to the Share button
+        document.getElementById('share-btn').addEventListener('click', generateShareLink);
+
+        // Запуск
+        setupMarkerNames();
+        initTable();
+        setTheme('typewriter'); // Застосовуємо тему за замовчуванням
+        setLang('en'); // Мова за замовчуванням
+        loadSharedLink(); // Check if opening from a generated URL
     </script>
 </body>
 </html>
