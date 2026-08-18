@@ -1256,6 +1256,103 @@
         initTable();
         setTheme('typewriter'); // Застосовуємо тему за замовчуванням
         setLang('en'); // Мова за замовчуванням
+
+        // --- URL SHARING SYSTEM ---
+
+        // 1. Pack the current table into a shareable URL
+        function generateShareLink() {
+            try {
+                const tableData = [];
+                // Grab every row and cell
+                document.querySelectorAll('table tr').forEach(row => {
+                    const rowData = [];
+                    row.querySelectorAll('td').forEach(cell => {
+                        rowData.push({
+                            text: cell.innerText || cell.textContent,
+                            colorClass: cell.className // Saves the painted color
+                        });
+                    });
+                    tableData.push(rowData);
+                });
+        
+                // Grab custom legend names
+                const markers = Array.from(document.querySelectorAll('.legend-input')).map(input => input.value);
+        
+                // Pack it into a data object
+                const state = { 
+                    grid: tableData, 
+                    markers: markers,
+                    theme: document.documentElement.getAttribute('data-theme')
+                };
+                
+                // Convert to Base64 so it can be passed in a URL safely
+                const encodedState = btoa(encodeURIComponent(JSON.stringify(state)));
+                const shareUrl = window.location.origin + window.location.pathname + '?map=' + encodedState;
+        
+                // Give the user their link
+                prompt("Here is your shareable link! Copy it and send it to your friends:", shareUrl);
+            } catch (e) {
+                alert("Oops! Something went wrong while generating the link.");
+                console.error(e);
+            }
+        }
+        
+        // 2. Unpack the table if someone opens a shared link
+        function loadSharedLink() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const mapData = urlParams.get('map');
+            
+            if (mapData) {
+                try {
+                    // Decode the Base64 URL back into our data object
+                    const state = JSON.parse(decodeURIComponent(atob(mapData)));
+                    
+                    // Restore theme
+                    if (state.theme) {
+                        document.documentElement.setAttribute('data-theme', state.theme);
+                    }
+        
+                    // Restore legend markers
+                    if (state.markers) {
+                        const inputs = document.querySelectorAll('.legend-input');
+                        state.markers.forEach((val, index) => {
+                            if (inputs[index]) inputs[index].value = val;
+                        });
+                    }
+        
+                    // Restore the grid and ships
+                    if (state.grid && state.grid.length > 0) {
+                        const tbody = document.querySelector('tbody') || document.querySelector('table');
+                        tbody.innerHTML = ''; // Clear default table
+                        
+                        state.grid.forEach(rowData => {
+                            const tr = document.createElement('tr');
+                            rowData.forEach(cellData => {
+                                const td = document.createElement('td');
+                                td.innerText = cellData.text;
+                                td.className = cellData.colorClass; // Restores the saved colors
+                                
+                                // Re-attach the clicking function to the new cells 
+                                // IMPORTANT: Change 'toggleCellColor' to whatever your actual cell-click function is named!
+                                td.addEventListener('click', function(e) {
+                                    // Call your existing painting function here
+                                    handleCellClick(e); 
+                                });
+                                
+                                tr.appendChild(td);
+                            });
+                            tbody.appendChild(tr);
+                        });
+                    }
+                } catch (error) {
+                    alert("This share link seems to be broken or invalid.");
+                    console.error(error);
+                }
+            }
+        }
+        
+        // 3. Check for a shared link as soon as the page loads
+        window.addEventListener('DOMContentLoaded', loadSharedLink);
     </script>
 </body>
 </html>
