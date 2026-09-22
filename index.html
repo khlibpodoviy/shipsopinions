@@ -192,18 +192,21 @@
             margin-top: 40px; width: 100%; padding: 10px 0;
             border-top: 2px dashed var(--border-main);
         }
-        .spectrum-labels {
-            display: flex; justify-content: space-between; font-weight: bold; font-size: 18px; margin-bottom: 8px;
+        .spectrum-labels-top {
+            position: relative; height: 24px; font-weight: bold; font-size: 18px; margin-bottom: 8px;
         }
         #ui-gradient-bar {
             position: relative; height: 24px; width: 100%; border: 2px solid var(--border-main);
-            border-radius: 12px;
+            border-radius: 12px; background-color: var(--color-default);
         }
         #ui-spec-marker {
             position: absolute; top: -6px; height: 36px; width: 6px;
             background-color: var(--text-main); border-radius: 3px;
             transform: translateX(-50%); transition: left 0.4s cubic-bezier(0.25, 1, 0.5, 1);
             box-shadow: 0 0 0 2px var(--bg-paper); z-index: 2;
+        }
+        #ui-gradient-labels {
+            position: relative; height: 20px; margin-top: 8px;
         }
 
         /* Controls & Modals */
@@ -221,7 +224,7 @@
             display: none; gap: 15px; margin-top: 15px; flex-wrap: wrap; justify-content: center; width: 100%;
         }
         
-        .stop-row { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
+        .stop-row { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; flex-wrap: wrap; }
 
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -299,31 +302,27 @@
             </div>
         </div>
         
-        <!-- NEW: SCORING SYSTEM -->
+        <!-- SCORING SYSTEM -->
         <div class="settings-row" style="flex-direction: column; align-items: flex-start;">
             <span class="settings-label" id="label-scoring">Scoring (Points per cell):</span>
             <div style="display: flex; gap: 10px; flex-wrap: wrap; width: 100%; font-size: 14px;">
-                <label>Default: <input type="number" id="score-default" value="0" class="marker-input score-input" oninput="calculateScore()"></label>
-                <label>Love: <input type="number" id="score-love" value="5" class="marker-input score-input" oninput="calculateScore()"></label>
-                <label>Like: <input type="number" id="score-like" value="3" class="marker-input score-input" oninput="calculateScore()"></label>
-                <label>Platonic: <input type="number" id="score-platonic" value="1" class="marker-input score-input" oninput="calculateScore()"></label>
-                <label>Neutral: <input type="number" id="score-neutral" value="0" class="marker-input score-input" oninput="calculateScore()"></label>
-                <label>Dislike: <input type="number" id="score-dislike" value="-3" class="marker-input score-input" oninput="calculateScore()"></label>
-                <label>Hate: <input type="number" id="score-hate" value="-5" class="marker-input score-input" oninput="calculateScore()"></label>
-                <label style="display:none;" id="label-score-c1">Marker 7: <input type="number" id="score-custom1" value="0" class="marker-input score-input" oninput="calculateScore()"></label>
-                <label style="display:none;" id="label-score-c2">Marker 8: <input type="number" id="score-custom2" value="0" class="marker-input score-input" oninput="calculateScore()"></label>
+                <label><span id="label-score-text-default">Default</span>: <input type="number" id="score-default" value="0" class="marker-input score-input" oninput="calculateScore()"></label>
+                <label><span id="label-score-text-love">Love</span>: <input type="number" id="score-love" value="5" class="marker-input score-input" oninput="calculateScore()"></label>
+                <label><span id="label-score-text-like">Like</span>: <input type="number" id="score-like" value="3" class="marker-input score-input" oninput="calculateScore()"></label>
+                <label><span id="label-score-text-platonic">Platonic</span>: <input type="number" id="score-platonic" value="1" class="marker-input score-input" oninput="calculateScore()"></label>
+                <label><span id="label-score-text-neutral">Neutral</span>: <input type="number" id="score-neutral" value="0" class="marker-input score-input" oninput="calculateScore()"></label>
+                <label><span id="label-score-text-dislike">Dislike</span>: <input type="number" id="score-dislike" value="-3" class="marker-input score-input" oninput="calculateScore()"></label>
+                <label><span id="label-score-text-hate">Hate</span>: <input type="number" id="score-hate" value="-5" class="marker-input score-input" oninput="calculateScore()"></label>
+                <label style="display:none;" id="label-score-c1"><span id="label-score-text-custom1">Marker 7</span>: <input type="number" id="score-custom1" value="0" class="marker-input score-input" oninput="calculateScore()"></label>
+                <label style="display:none;" id="label-score-c2"><span id="label-score-text-custom2">Marker 8</span>: <input type="number" id="score-custom2" value="0" class="marker-input score-input" oninput="calculateScore()"></label>
             </div>
         </div>
 
-        <!-- NEW: SPECTRUM CONFIG -->
+        <!-- SPECTRUM CONFIG -->
         <div class="settings-row" style="flex-direction: column; align-items: flex-start;">
-            <span class="settings-label" id="label-spectrum-setup">Spectrum Setup:</span>
-            <div style="display: flex; gap: 15px; align-items: center; margin-bottom: 10px;">
-                <label>Min bounds: <input type="number" id="spec-min-input" value="-50" class="marker-input score-input" oninput="calculateScore()"></label>
-                <label>Max bounds: <input type="number" id="spec-max-input" value="50" class="marker-input score-input" oninput="calculateScore()"></label>
-            </div>
+            <span class="settings-label" id="label-spectrum-setup">Spectrum Setup (Anchors & Labels):</span>
             
-            <div id="gradient-stops-list"></div>
+            <div id="gradient-stops-list" style="display: flex; flex-direction: column; gap: 8px; width: 100%;"></div>
             <button class="setting-btn" onclick="addGradientStop()" style="margin-top: 5px;" id="btn-add-stop">+ Add Stop</button>
         </div>
     </div>
@@ -351,16 +350,20 @@
             <!-- Таблиця генерується через JS -->
         </table>
 
-        <!-- NEW: SPECTRUM VISUAL -->
+        <!-- SPECTRUM VISUAL -->
         <div id="spectrum-container">
-            <div class="spectrum-labels">
-                <span id="ui-spec-min-val">-50</span>
-                <span id="ui-spec-total">Score: 0</span>
-                <span id="ui-spec-max-val">50</span>
+            <div class="spectrum-labels-top">
+                <span id="ui-spec-min-val" style="position: absolute; left: 0;">-50</span>
+                <span id="ui-spec-total" style="position: absolute; left: 50%; transform: translateX(-50%); text-align: center;">Score: 0</span>
+                <span id="ui-spec-max-val" style="position: absolute; right: 0;">50</span>
             </div>
+            
             <div id="ui-gradient-bar">
                 <div id="ui-spec-marker"></div>
             </div>
+            
+            <!-- Dynamic Labels Go Here -->
+            <div id="ui-gradient-labels"></div>
         </div>
     </div>
 
@@ -399,12 +402,11 @@
     <script>
         const uiText = {
             en: {
-                title: "Ships opinion table",
-                love: "Love", like: "Like", platonic: "Platonic", 
-                neutral: "Neutral", dislike: "Dislike", hate: "Hate",
+                title: "Ships opinion table", defaultLabel: "Default", 
+                love: "Love", like: "Like", platonic: "Platonic", neutral: "Neutral", dislike: "Dislike", hate: "Hate",
                 download: "[ Download ]", reset: "[ Reset ]", saving: "Saving...",
                 labelLang: "Lang:", labelTheme: "Theme:", labelEditNames: "Marker Names:", labelEditTitle: "Table Name:",
-                labelScoring: "Scoring (Points per cell):", labelSpectrum: "Spectrum Setup:", addStop: "+ Add Stop", scoreWord: "Score:",
+                labelScoring: "Scoring (Points per cell):", labelSpectrum: "Spectrum Setup (Anchors & Labels):", addStop: "+ Add Stop", scoreWord: "Score:",
                 placeholder1: "+ Marker 7", placeholder2: "+ Marker 8",
                 editTable: "[ Edit Table ]", doneEditing: "[ Done Editing ]",
                 addRow: "[ + Row ]", removeRow: "[ - Row ]", addCol: "[ + Col ]", removeCol: "[ - Col ]",
@@ -413,12 +415,11 @@
                 close: "[ Close ]", copy: "[ Copy ]", copied: "[ Copied! ]", errTitle: "Error", errSave: "Failed to generate link.", errLoad: "Failed to load shared table."
             },
             ru: {
-                title: "Табличка мнений о корабликах",
-                love: "Любовь", like: "Нравится", platonic: "Платоника", 
-                neutral: "Нейтрально", dislike: "Не нравится", hate: "Ненависть",
+                title: "Табличка мнений о корабликах", defaultLabel: "Обычный", 
+                love: "Любовь", like: "Нравится", platonic: "Платоника", neutral: "Нейтрально", dislike: "Не нравится", hate: "Ненависть",
                 download: "[ Скачать ]", reset: "[ Сброс ]", saving: "Сохраняем...",
                 labelLang: "Язык:", labelTheme: "Тема:", labelEditNames: "Названия маркеров:", labelEditTitle: "Название таблицы:",
-                labelScoring: "Очки (Баллы за ячейку):", labelSpectrum: "Настройки спектра:", addStop: "+ Добавить", scoreWord: "Итог:",
+                labelScoring: "Очки (Баллы за ячейку):", labelSpectrum: "Спектр (Цвета и Надписи):", addStop: "+ Добавить", scoreWord: "Итог:",
                 placeholder1: "+ Маркер 7", placeholder2: "+ Маркер 8",
                 editTable: "[ Редактировать ]", doneEditing: "[ Готово ]",
                 addRow: "[ + Ряд ]", removeRow: "[ - Ряд ]", addCol: "[ + Столбец ]", removeCol: "[ - Столбец ]",
@@ -427,12 +428,11 @@
                 close: "[ Закрыть ]", copy: "[ Копировать ]", copied: "[ Скопировано! ]", errTitle: "Ошибка", errSave: "Не удалось создать ссылку.", errLoad: "Не удалось загрузить чужую таблицу."
             },
             ua: {
-                title: "Табличка оцінки корабликів",
-                love: "Обожню", like: "Подобається", platonic: "Платонічно", 
-                neutral: "Нейтрально", dislike: "Не подобається", hate: "Ненавиджу",
+                title: "Табличка оцінки корабликів", defaultLabel: "Стандарт", 
+                love: "Обожню", like: "Подобається", platonic: "Платонічно", neutral: "Нейтрально", dislike: "Не подобається", hate: "Ненавиджу",
                 download: "[ Завантажити ]", reset: "[ Скинути ]", saving: "Зберігаємо...",
                 labelLang: "Мова:", labelTheme: "Тема:", labelEditNames: "Назви маркерів:", labelEditTitle: "Назва таблиці:",
-                labelScoring: "Оцінювання (Бали за клітинку):", labelSpectrum: "Налаштування спектру:", addStop: "+ Додати", scoreWord: "Разом:",
+                labelScoring: "Оцінювання (Бали за клітинку):", labelSpectrum: "Спектр (Кольори та Написи):", addStop: "+ Додати", scoreWord: "Разом:",
                 placeholder1: "+ Маркер 7", placeholder2: "+ Маркер 8",
                 editTable: "[ Редагувати ]", doneEditing: "[ Готово ]",
                 addRow: "[ + Ряд ]", removeRow: "[ - Ряд ]", addCol: "[ + Стовпець ]", removeCol: "[ - Стовпець ]",
@@ -467,11 +467,11 @@
         let activeBrushIndex = 0; 
         let isEditMode = false;
         
-        // Gradient Data
-        let gradientStops = [
-            { color: '#9c66a4', pos: 0 },   // Hate
-            { color: '#e0ddd5', pos: 50 },  // Neutral
-            { color: '#d9534f', pos: 100 }  // Love
+        // Gradient / Spectrum Anchors
+        let spectrumAnchors = [
+            { pos: 0, color: '#9c66a4', useColor: true, label: 'Worst' },
+            { pos: 50, color: '#e0ddd5', useColor: true, label: '' },
+            { pos: 100, color: '#d9534f', useColor: true, label: 'Best' }
         ];
 
         const table = document.getElementById('ship-table');
@@ -485,13 +485,15 @@
                     const val = input.value.trim() || uiText[currentLang][key];
                     document.getElementById(`ui-${key}`).textContent = val;
                     document.getElementById(`label-custom-${key}`).textContent = val;
+                    document.getElementById(`label-score-text-${key}`).textContent = val;
                     updateModeHint();
                 });
             });
 
             const i1 = document.getElementById('input-custom1');
             const i2 = document.getElementById('input-custom2');
-            function updateMarker(inputElem, legendElem, uiElem, stateIndex, pickerGroup, scoreLabel) {
+            
+            function updateMarker(inputElem, legendElem, uiElem, stateIndex, pickerGroup, scoreContainer, scoreTextSpan) {
                 const val = inputElem.value.trim();
                 if(val) {
                     legendElem.style.display = 'flex';
@@ -499,38 +501,44 @@
                     if(!activeStates.includes(stateIndex)) activeStates.push(stateIndex);
                     activeStates.sort((a, b) => a - b);
                     if(currentTheme === 'custom' && pickerGroup) pickerGroup.style.display = 'flex';
-                    scoreLabel.style.display = 'block';
+                    
+                    scoreContainer.style.display = 'block';
+                    scoreTextSpan.textContent = val; 
                 } else {
                     legendElem.style.display = 'none';
                     activeStates = activeStates.filter(s => s !== stateIndex);
                     if(activeBrushIndex === stateIndex) setActiveBrush(0);
                     if(pickerGroup) pickerGroup.style.display = 'none';
-                    scoreLabel.style.display = 'none';
+                    
+                    scoreContainer.style.display = 'none';
+                    scoreTextSpan.textContent = uiText[currentLang][stateIndex === 7 ? 'placeholder1' : 'placeholder2'];
                     document.getElementById(`score-custom${stateIndex-6}`).value = 0;
                     calculateScore();
                 }
                 updateModeHint();
             }
 
-            i1.addEventListener('input', () => updateMarker(i1, document.getElementById('leg-custom1'), document.getElementById('ui-custom1'), 7, document.getElementById('picker-group-custom1'), document.getElementById('label-score-c1')));
-            i2.addEventListener('input', () => updateMarker(i2, document.getElementById('leg-custom2'), document.getElementById('ui-custom2'), 8, document.getElementById('picker-group-custom2'), document.getElementById('label-score-c2')));
+            i1.addEventListener('input', () => updateMarker(i1, document.getElementById('leg-custom1'), document.getElementById('ui-custom1'), 7, document.getElementById('picker-group-custom1'), document.getElementById('label-score-c1'), document.getElementById('label-score-text-custom1')));
+            i2.addEventListener('input', () => updateMarker(i2, document.getElementById('leg-custom2'), document.getElementById('ui-custom2'), 8, document.getElementById('picker-group-custom2'), document.getElementById('label-score-c2'), document.getElementById('label-score-text-custom2')));
         }
 
         document.getElementById('input-table-title').addEventListener('input', (e) => {
             document.getElementById('ui-title').textContent = e.target.value.trim() || uiText[currentLang].title;
         });
 
-        // --- NEW: Spectrum & Calculation Logic ---
+        // Spectrum Editor & Calculations
         function renderGradientEditor() {
             const container = document.getElementById('gradient-stops-list');
             container.innerHTML = '';
-            gradientStops.forEach((stop, index) => {
+            spectrumAnchors.forEach((stop, index) => {
                 const row = document.createElement('div');
                 row.className = 'stop-row';
                 row.innerHTML = `
-                    <input type="color" value="${stop.color}" onchange="updateGradientStop(${index}, 'color', this.value)">
-                    <input type="number" class="marker-input score-input" value="${stop.pos}" min="0" max="100" onchange="updateGradientStop(${index}, 'pos', this.value)"> %
-                    <button class="setting-btn" onclick="removeGradientStop(${index})" style="padding: 4px 8px; font-size:12px;">X</button>
+                    <input type="checkbox" title="Use Color in gradient?" ${stop.useColor ? 'checked' : ''} onchange="updateGradientStop(${index}, 'useColor', this.checked)">
+                    <input type="color" value="${stop.color}" title="Color" onchange="updateGradientStop(${index}, 'color', this.value)" style="opacity: ${stop.useColor ? 1 : 0.3}; pointer-events: ${stop.useColor ? 'auto' : 'none'};">
+                    <input type="number" class="marker-input score-input" value="${stop.pos}" min="0" max="100" title="Percentage (0-100)" onchange="updateGradientStop(${index}, 'pos', this.value)"> %
+                    <input type="text" class="marker-input" style="width: 140px;" placeholder="Label (optional)" value="${stop.label || ''}" oninput="updateGradientStop(${index}, 'label', this.value)">
+                    <button class="setting-btn" onclick="removeGradientStop(${index})" style="padding: 4px 8px; font-size:12px;" title="Remove">X</button>
                 `;
                 container.appendChild(row);
             });
@@ -538,32 +546,57 @@
         }
 
         function addGradientStop() {
-            gradientStops.push({ color: '#ffffff', pos: 50 });
+            spectrumAnchors.push({ pos: 50, color: '#ffffff', useColor: true, label: '' });
             renderGradientEditor();
         }
 
         function removeGradientStop(index) {
-            if(gradientStops.length > 2) {
-                gradientStops.splice(index, 1);
+            if(spectrumAnchors.length > 1) {
+                spectrumAnchors.splice(index, 1);
                 renderGradientEditor();
             }
         }
 
         function updateGradientStop(index, key, value) {
-            gradientStops[index][key] = key === 'pos' ? Math.max(0, Math.min(100, parseInt(value) || 0)) : value;
+            spectrumAnchors[index][key] = key === 'pos' ? Math.max(0, Math.min(100, parseInt(value) || 0)) : value;
             renderGradientEditor();
         }
 
         function updateSpectrumBar() {
-            const sorted = [...gradientStops].sort((a,b) => a.pos - b.pos);
-            const str = sorted.map(s => `${s.color} ${s.pos}%`).join(', ');
-            document.getElementById('ui-gradient-bar').style.background = `linear-gradient(to right, ${str})`;
-            calculateScore(); // Re-adjust marker
+            const sorted = [...spectrumAnchors].sort((a,b) => a.pos - b.pos);
+            
+            // Rebuild Gradient (Only anchors with useColor = true)
+            const colorStops = sorted.filter(s => s.useColor);
+            let gradientStr = colorStops.map(s => `${s.color} ${s.pos}%`).join(', ');
+            if (colorStops.length === 0) gradientStr = 'transparent';
+            else if (colorStops.length === 1) gradientStr = `${colorStops[0].color}, ${colorStops[0].color}`;
+            
+            document.getElementById('ui-gradient-bar').style.background = `linear-gradient(to right, ${gradientStr})`;
+            
+            // Rebuild text labels 
+            const labelsContainer = document.getElementById('ui-gradient-labels');
+            labelsContainer.innerHTML = '';
+            sorted.forEach(stop => {
+                if (stop.label && stop.label.trim() !== '') {
+                    const span = document.createElement('span');
+                    span.textContent = stop.label;
+                    span.style.position = 'absolute';
+                    span.style.left = `${stop.pos}%`;
+                    span.style.transform = 'translateX(-50%)';
+                    span.style.fontSize = '14px';
+                    span.style.fontWeight = 'bold';
+                    span.style.whiteSpace = 'nowrap';
+                    labelsContainer.appendChild(span);
+                }
+            });
+
+            calculateScore(); 
         }
 
         function calculateScore() {
             let total = 0;
             const cells = table.getElementsByTagName('td');
+            const numCells = cells.length || 1; // Fallback to avoid dividing by 0
             
             const points = {
                 0: parseInt(document.getElementById('score-default').value) || 0,
@@ -581,21 +614,29 @@
                 total += points[cell.dataset.stateIndex || 0];
             }
 
-            const min = parseInt(document.getElementById('spec-min-input').value) || -50;
-            const max = parseInt(document.getElementById('spec-max-input').value) || 50;
+            // AUTO CALCULATE MIN AND MAX BOUNDS
+            let availableScores = activeStates.map(idx => points[idx]);
+            if (!activeStates.includes(0)) availableScores.push(points[0]); // Ensure Default is considered
 
-            document.getElementById('ui-spec-min-val').textContent = min;
-            document.getElementById('ui-spec-max-val').textContent = max;
+            let minScore = Math.min(...availableScores);
+            let maxScore = Math.max(...availableScores);
+
+            let minPossible = minScore * numCells;
+            let maxPossible = maxScore * numCells;
+
+            // Failsafe in case all scores are identical (e.g. everything = 0)
+            if (minPossible === maxPossible) maxPossible += 1;
+
+            document.getElementById('ui-spec-min-val').textContent = minPossible;
+            document.getElementById('ui-spec-max-val').textContent = maxPossible;
             document.getElementById('ui-spec-total').textContent = `${uiText[currentLang].scoreWord} ${total}`;
 
-            let range = max - min;
-            if(range === 0) range = 1; // prevent divide by zero
-            let percent = ((total - min) / range) * 100;
-            percent = Math.max(0, Math.min(100, percent)); // clamp
+            let range = maxPossible - minPossible;
+            let percent = ((total - minPossible) / range) * 100;
+            percent = Math.max(0, Math.min(100, percent)); 
 
             document.getElementById('ui-spec-marker').style.left = `${percent}%`;
         }
-        // --- END Spectrum Logic ---
 
         function cellClickHandler(e) {
             if (isEditMode) return;
@@ -611,7 +652,7 @@
                 cell.dataset.stateIndex = (currentIndex === activeBrushIndex) ? 0 : activeBrushIndex;
             }
             updateCellColor(cell);
-            calculateScore(); // Re-calc score
+            calculateScore(); 
         }
 
         function initTable() {
@@ -663,7 +704,7 @@
         }
 
         document.querySelectorAll('input[type="color"]').forEach(input => {
-            if(!input.onchange) { // ignore gradient pickers
+            if(!input.onchange) { 
                 input.addEventListener('input', function() {
                     if (currentTheme === 'custom') {
                         themes.custom.colors[this.id.replace('color-', '')] = this.value;
@@ -681,11 +722,15 @@
             document.getElementById(`btn-${lang}`).classList.add('active');
 
             const t = uiText[lang];
+            
+            document.getElementById('label-score-text-default').textContent = t.defaultLabel;
+            
             ['love', 'like', 'platonic', 'neutral', 'dislike', 'hate'].forEach(key => {
                 const input = document.getElementById(`input-name-${key}`);
                 input.value = t[key];
                 document.getElementById(`ui-${key}`).textContent = input.value;
                 document.getElementById(`label-custom-${key}`).textContent = input.value;
+                document.getElementById(`label-score-text-${key}`).textContent = input.value;
             });
 
             const titleInput = document.getElementById('input-table-title');
@@ -702,8 +747,11 @@
             document.getElementById('label-lang').textContent = t.labelLang;
             document.getElementById('label-theme').textContent = t.labelTheme;
             document.getElementById('label-edit-names').textContent = t.labelEditNames;
+            
             document.getElementById('input-custom1').placeholder = t.placeholder1;
             document.getElementById('input-custom2').placeholder = t.placeholder2;
+            document.getElementById('label-score-text-custom1').textContent = document.getElementById('input-custom1').value.trim() || t.placeholder1;
+            document.getElementById('label-score-text-custom2').textContent = document.getElementById('input-custom2').value.trim() || t.placeholder2;
             
             document.getElementById('edit-mode-btn').textContent = isEditMode ? t.doneEditing : t.editTable;
             document.getElementById('btn-add-row').textContent = t.addRow;
@@ -720,7 +768,7 @@
             document.getElementById('import-textarea').placeholder = t.importPlaceholder;
             
             updateModeHint();
-            calculateScore(); // Updates Score string translation
+            calculateScore(); 
         }
 
         document.getElementById('reset-btn').addEventListener('click', () => {
@@ -870,8 +918,7 @@
                     grid: tableData, theme: currentTheme, lang: currentLang, customColors: themes.custom.colors,
                     customTitle: document.getElementById('input-table-title').value.trim(),
                     markerNames: { love: document.getElementById('input-name-love').value, like: document.getElementById('input-name-like').value, platonic: document.getElementById('input-name-platonic').value, neutral: document.getElementById('input-name-neutral').value, dislike: document.getElementById('input-name-dislike').value, hate: document.getElementById('input-name-hate').value, custom1: document.getElementById('input-custom1').value, custom2: document.getElementById('input-custom2').value },
-                    scores: scores, spectrumStops: gradientStops,
-                    specMin: document.getElementById('spec-min-input').value, specMax: document.getElementById('spec-max-input').value
+                    scores: scores, spectrumStops: spectrumAnchors
                 };
                 
                 const shareUrl = window.location.origin + window.location.pathname + '?map=' + LZString.compressToEncodedURIComponent(JSON.stringify(state));
@@ -904,9 +951,13 @@
                         document.getElementById('score-hate').value = state.scores[6] || 0; document.getElementById('score-custom1').value = state.scores[7] || 0;
                         document.getElementById('score-custom2').value = state.scores[8] || 0;
                     }
-                    if(state.specMin) document.getElementById('spec-min-input').value = state.specMin;
-                    if(state.specMax) document.getElementById('spec-max-input').value = state.specMax;
-                    if(state.spectrumStops) gradientStops = state.spectrumStops;
+                    
+                    if(state.spectrumStops) {
+                        spectrumAnchors = state.spectrumStops.map(s => ({
+                            pos: s.pos, color: s.color, label: s.label || '', 
+                            useColor: s.useColor !== undefined ? s.useColor : true // Fix legacy loads
+                        }));
+                    }
 
                     if (state.grid && state.grid.length > 0) {
                         table.innerHTML = '';
@@ -922,7 +973,7 @@
                     }
                 } catch (error) { showModal(uiText[currentLang].errTitle, uiText[currentLang].errLoad); }
             }
-            renderGradientEditor(); // Always render stops on load
+            renderGradientEditor(); 
         }
 
         document.getElementById('share-btn').addEventListener('click', generateShareLink);
