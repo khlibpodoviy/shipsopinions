@@ -8,7 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
     <!-- Підключаємо бібліотеку для створення скріншоту таблиці -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <!-- Підключаємо бібліотеку для стиснення даних у посиланні (вирішує проблему URI Too Long) -->
+    <!-- Підключаємо бібліотеку для стиснення даних у посиланні -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.4.4/lz-string.min.js"></script>
     <style>
         :root {
@@ -23,7 +23,7 @@
             --btn-active: #111;
             --btn-active-text: white;
             
-            /* Кольори легенди (за замовчуванням Typewriter Vintage) */
+            /* Кольори легенди */
             --color-default: transparent;
             --color-love: #d9534f;
             --color-like: #f0ad4e;
@@ -47,7 +47,6 @@
             transition: background-color 0.3s, color 0.3s;
         }
 
-        /* Панель налаштувань (Мова + Теми) */
         .settings-panel {
             display: flex;
             flex-direction: column;
@@ -90,10 +89,7 @@
             font-size: 14px;
         }
 
-        .setting-btn:hover {
-            background: var(--btn-hover);
-        }
-
+        .setting-btn:hover { background: var(--btn-hover); }
         .setting-btn.active {
             background: var(--btn-active);
             color: var(--btn-active-text);
@@ -110,173 +106,76 @@
             width: 140px;
             font-size: 14px;
         }
+        .marker-input:focus { outline: 2px solid var(--border-main); }
+        
+        .score-input { width: 60px; text-align: center; }
 
-        .marker-input:focus {
-            outline: 2px solid var(--border-main);
-        }
-
-        /* Кастомна палітра (прихована за замовчуванням) */
         #custom-palette-settings {
-            display: none;
-            width: 100%;
-            flex-wrap: wrap;
-            gap: 15px;
-            padding-top: 10px;
-            border-top: 1px dashed var(--border-main);
-            margin-top: 5px;
+            display: none; width: 100%; flex-wrap: wrap; gap: 15px; padding-top: 10px;
+            border-top: 1px dashed var(--border-main); margin-top: 5px;
         }
 
-        .color-picker-group {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .color-picker-group label {
-            font-size: 14px;
-            font-weight: bold;
-        }
+        .color-picker-group { display: flex; align-items: center; gap: 5px; }
+        .color-picker-group label { font-size: 14px; font-weight: bold; }
 
         input[type="color"] {
-            -webkit-appearance: none;
-            border: 1px solid var(--border-main);
-            width: 30px;
-            height: 30px;
-            padding: 0;
-            background: none;
-            cursor: pointer;
+            -webkit-appearance: none; border: 1px solid var(--border-main);
+            width: 30px; height: 30px; padding: 0; background: none; cursor: pointer;
         }
-        
-        input[type="color"]::-webkit-color-swatch-wrapper {
-            padding: 0;
-        }
-        
-        input[type="color"]::-webkit-color-swatch {
-            border: none;
-        }
+        input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+        input[type="color"]::-webkit-color-swatch { border: none; }
 
-        /* Основний контейнер, який буде зберігатися як картинка */
         #capture-area {
-            background-color: var(--bg-paper);
-            padding: 25px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            max-width: 1000px;
-            width: 100%;
-            box-sizing: border-box;
-            border: 2px solid var(--border-main);
+            background-color: var(--bg-paper); padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2); max-width: 1000px; width: 100%;
+            box-sizing: border-box; border: 2px solid var(--border-main);
             transition: background-color 0.3s, border-color 0.3s;
         }
 
         .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 25px;
-            flex-wrap: wrap;
-            gap: 20px;
+            display: flex; justify-content: space-between; align-items: flex-start;
+            margin-bottom: 25px; flex-wrap: wrap; gap: 20px;
         }
 
         .title {
-            font-size: 34px;
-            font-weight: bold;
-            line-height: 1.2;
-            margin: 0;
-            max-width: 400px;
-            text-transform: uppercase;
-            letter-spacing: -1px;
-            color: var(--text-main);
-            transition: color 0.3s;
-            word-wrap: break-word;
+            font-size: 34px; font-weight: bold; line-height: 1.2; margin: 0;
+            max-width: 400px; text-transform: uppercase; letter-spacing: -1px;
+            color: var(--text-main); transition: color 0.3s; word-wrap: break-word;
         }
 
         .legend {
-            border: 2px solid var(--border-main);
-            padding: 10px 20px;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px 30px;
-            background: var(--bg-paper);
-            transition: background-color 0.3s, border-color 0.3s;
+            border: 2px solid var(--border-main); padding: 10px 20px; display: grid;
+            grid-template-columns: 1fr 1fr; gap: 15px 30px; background: var(--bg-paper);
         }
 
         .legend-item {
-            display: flex;
-            align-items: center;
-            font-size: 18px;
-            font-weight: bold;
-            color: var(--text-main);
-            transition: color 0.3s, transform 0.1s;
-            cursor: pointer;
-            padding: 4px;
-            border-radius: 4px;
-            border: 2px solid transparent;
+            display: flex; align-items: center; font-size: 18px; font-weight: bold;
+            color: var(--text-main); cursor: pointer; padding: 4px; border-radius: 4px; border: 2px solid transparent;
         }
-
-        .legend-item:hover {
-            background-color: rgba(0,0,0,0.05);
-        }
-
-        .legend-item.active-brush {
-            border-color: var(--border-main);
-            background-color: var(--btn-hover);
-            transform: scale(1.05);
-        }
+        .legend-item:hover { background-color: rgba(0,0,0,0.05); }
+        .legend-item.active-brush { border-color: var(--border-main); background-color: var(--btn-hover); transform: scale(1.05); }
         
         .mode-indicator {
-            width: 100%;
-            text-align: center;
-            margin-bottom: 15px;
-            font-size: 14px;
-            font-style: italic;
-            opacity: 0.8;
+            width: 100%; text-align: center; margin-bottom: 15px; font-size: 14px; font-style: italic; opacity: 0.8;
         }
 
-        .color-box {
-            width: 26px;
-            height: 26px;
-            margin-right: 12px;
-            border: 2px solid var(--border-main);
-            transition: border-color 0.3s, background-color 0.3s;
-        }
+        .color-box { width: 26px; height: 26px; margin-right: 12px; border: 2px solid var(--border-main); }
 
-        /* Таблиця */
         table {
-            width: 100%;
-            border-collapse: collapse;
-            table-layout: fixed;
-            border: 2px solid var(--border-main);
-            transition: border-color 0.3s;
-            background-color: var(--bg-paper);
+            width: 100%; border-collapse: collapse; table-layout: fixed;
+            border: 2px solid var(--border-main); background-color: var(--bg-paper);
         }
 
         td {
-            border: 1px solid var(--border-main);
-            padding: 6px 4px;
-            font-size: 13px;
-            letter-spacing: -0.2px;
-            font-weight: bold;
-            cursor: pointer;
-            user-select: none;
-            transition: background-color 0.1s, border-color 0.3s, color 0.3s;
-            background-color: var(--color-default);
-            height: auto;
-            min-height: 45px;
-            text-align: left;
-            color: var(--text-main);
-            
-            /* Налаштування для ідеального перенесення тексту ЦІЛИМИ словами */
-            word-break: normal;
-            word-wrap: break-word;
-            overflow-wrap: break-word; 
-            hyphens: none;
-            line-height: 1.15;
-            vertical-align: middle;
+            border: 1px solid var(--border-main); padding: 6px 4px; font-size: 13px;
+            letter-spacing: -0.2px; font-weight: bold; cursor: pointer; user-select: none;
+            background-color: var(--color-default); height: auto; min-height: 45px;
+            text-align: left; color: var(--text-main);
+            word-break: normal; word-wrap: break-word; overflow-wrap: break-word; 
+            hyphens: none; line-height: 1.15; vertical-align: middle;
         }
 
-        td:hover {
-            opacity: 0.85;
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
-        }
+        td:hover { opacity: 0.85; box-shadow: inset 0 0 10px rgba(0,0,0,0.1); }
 
         .bg-default { background-color: var(--color-default); }
         .bg-love { background-color: var(--color-love); }
@@ -288,92 +187,66 @@
         .bg-custom1 { background-color: var(--color-custom1); }
         .bg-custom2 { background-color: var(--color-custom2); }
 
-        /* Кнопки керування */
-        .controls {
-            margin-top: 30px;
-            display: flex;
-            gap: 20px;
+        /* Spectrum Bar Styles */
+        #spectrum-container {
+            margin-top: 40px; width: 100%; padding: 10px 0;
+            border-top: 2px dashed var(--border-main);
+        }
+        .spectrum-labels {
+            display: flex; justify-content: space-between; font-weight: bold; font-size: 18px; margin-bottom: 8px;
+        }
+        #ui-gradient-bar {
+            position: relative; height: 24px; width: 100%; border: 2px solid var(--border-main);
+            border-radius: 12px;
+        }
+        #ui-spec-marker {
+            position: absolute; top: -6px; height: 36px; width: 6px;
+            background-color: var(--text-main); border-radius: 3px;
+            transform: translateX(-50%); transition: left 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+            box-shadow: 0 0 0 2px var(--bg-paper); z-index: 2;
         }
 
+        /* Controls & Modals */
+        .controls { margin-top: 30px; display: flex; gap: 20px; }
         .action-btn {
-            font-family: 'Courier Prime', 'Courier New', Courier, monospace;
-            padding: 12px 24px;
-            font-size: 16px;
-            font-weight: bold;
-            text-transform: uppercase;
-            cursor: pointer;
-            border: 2px solid var(--border-main);
-            border-radius: 4px;
-            transition: transform 0.1s, box-shadow 0.1s, background-color 0.3s, color 0.3s;
-            box-shadow: 4px 4px 0px var(--border-main);
-            background-color: var(--bg-paper);
-            color: var(--text-main);
+            font-family: 'Courier Prime', 'Courier New', Courier, monospace; padding: 12px 24px;
+            font-size: 16px; font-weight: bold; text-transform: uppercase; cursor: pointer;
+            border: 2px solid var(--border-main); border-radius: 4px;
+            box-shadow: 4px 4px 0px var(--border-main); background-color: var(--bg-paper); color: var(--text-main);
         }
-
-        .action-btn:active { 
-            transform: translate(4px, 4px);
-            box-shadow: 0px 0px 0px var(--border-main); 
-        }
-        
+        .action-btn:active { transform: translate(4px, 4px); box-shadow: 0px 0px 0px var(--border-main); }
         .action-btn:hover { background-color: var(--btn-hover); }
 
-        /* Панель редагування таблиці */
         #edit-table-controls {
-            display: none;
-            gap: 15px;
-            margin-top: 15px;
-            flex-wrap: wrap;
-            justify-content: center;
-            width: 100%;
+            display: none; gap: 15px; margin-top: 15px; flex-wrap: wrap; justify-content: center; width: 100%;
         }
+        
+        .stop-row { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
 
-        /* Модальне вікно для шерингу та помилок */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 1000;
         }
         .modal-content {
-            background: var(--bg-paper); padding: 25px; border-radius: 4px;
-            border: 2px solid var(--border-main); color: var(--text-main);
+            background: var(--bg-paper); padding: 25px; border-radius: 4px; border: 2px solid var(--border-main);
             max-width: 90%; width: 450px; text-align: center; box-shadow: 8px 8px 0px rgba(0,0,0,0.2);
-            font-family: 'Courier Prime', 'Courier New', Courier, monospace;
         }
         .modal-input {
             width: 100%; padding: 10px; margin: 15px 0; border: 2px solid var(--border-main);
-            box-sizing: border-box; font-family: monospace; background: rgba(255,255,255,0.6);
-            color: var(--text-main);
+            box-sizing: border-box; font-family: monospace; background: rgba(255,255,255,0.6); color: var(--text-main);
         }
-
         td[contenteditable="true"] {
-            cursor: text;
-            background-color: rgba(255, 255, 255, 0.4);
-            outline: 2px dashed var(--border-main);
-            outline-offset: -2px;
-        }
-        
-        td[contenteditable="true"]:hover {
-            opacity: 1;
-            box-shadow: none;
+            cursor: text; background-color: rgba(255, 255, 255, 0.4); outline: 2px dashed var(--border-main); outline-offset: -2px;
         }
 
-        /* Адаптивність для мобільних пристроїв */
         @media (max-width: 768px) {
-            #capture-area { padding: 10px; width: 100%; box-sizing: border-box; overflow: hidden; }
+            #capture-area { padding: 10px; }
             .title { font-size: 20px; }
             .legend { gap: 10px; padding: 10px; }
             .legend-item { font-size: 14px; }
             .color-box { width: 18px; height: 18px; margin-right: 6px; }
-            
-            td { 
-                font-size: 10px; 
-                padding: 4px 2px; 
-                letter-spacing: -0.5px;
-                hyphens: none;
-            }
-            
-            table { min-width: 100%; width: 100%; }
+            td { font-size: 10px; padding: 4px 2px; }
             .controls { flex-direction: column; width: 100%; max-width: 300px; }
-            .settings-row { justify-content: center; }
         }
     </style>
 </head>
@@ -425,6 +298,34 @@
                 <input type="text" id="input-custom2" placeholder="+ Marker 8" class="marker-input" maxlength="20">
             </div>
         </div>
+        
+        <!-- NEW: SCORING SYSTEM -->
+        <div class="settings-row" style="flex-direction: column; align-items: flex-start;">
+            <span class="settings-label" id="label-scoring">Scoring (Points per cell):</span>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; width: 100%; font-size: 14px;">
+                <label>Default: <input type="number" id="score-default" value="0" class="marker-input score-input" oninput="calculateScore()"></label>
+                <label>Love: <input type="number" id="score-love" value="5" class="marker-input score-input" oninput="calculateScore()"></label>
+                <label>Like: <input type="number" id="score-like" value="3" class="marker-input score-input" oninput="calculateScore()"></label>
+                <label>Platonic: <input type="number" id="score-platonic" value="1" class="marker-input score-input" oninput="calculateScore()"></label>
+                <label>Neutral: <input type="number" id="score-neutral" value="0" class="marker-input score-input" oninput="calculateScore()"></label>
+                <label>Dislike: <input type="number" id="score-dislike" value="-3" class="marker-input score-input" oninput="calculateScore()"></label>
+                <label>Hate: <input type="number" id="score-hate" value="-5" class="marker-input score-input" oninput="calculateScore()"></label>
+                <label style="display:none;" id="label-score-c1">Marker 7: <input type="number" id="score-custom1" value="0" class="marker-input score-input" oninput="calculateScore()"></label>
+                <label style="display:none;" id="label-score-c2">Marker 8: <input type="number" id="score-custom2" value="0" class="marker-input score-input" oninput="calculateScore()"></label>
+            </div>
+        </div>
+
+        <!-- NEW: SPECTRUM CONFIG -->
+        <div class="settings-row" style="flex-direction: column; align-items: flex-start;">
+            <span class="settings-label" id="label-spectrum-setup">Spectrum Setup:</span>
+            <div style="display: flex; gap: 15px; align-items: center; margin-bottom: 10px;">
+                <label>Min bounds: <input type="number" id="spec-min-input" value="-50" class="marker-input score-input" oninput="calculateScore()"></label>
+                <label>Max bounds: <input type="number" id="spec-max-input" value="50" class="marker-input score-input" oninput="calculateScore()"></label>
+            </div>
+            
+            <div id="gradient-stops-list"></div>
+            <button class="setting-btn" onclick="addGradientStop()" style="margin-top: 5px;" id="btn-add-stop">+ Add Stop</button>
+        </div>
     </div>
 
     <!-- Зона збереження картинки -->
@@ -449,6 +350,18 @@
         <table id="ship-table">
             <!-- Таблиця генерується через JS -->
         </table>
+
+        <!-- NEW: SPECTRUM VISUAL -->
+        <div id="spectrum-container">
+            <div class="spectrum-labels">
+                <span id="ui-spec-min-val">-50</span>
+                <span id="ui-spec-total">Score: 0</span>
+                <span id="ui-spec-max-val">50</span>
+            </div>
+            <div id="ui-gradient-bar">
+                <div id="ui-spec-marker"></div>
+            </div>
+        </div>
     </div>
 
     <div class="controls">
@@ -491,13 +404,13 @@
                 neutral: "Neutral", dislike: "Dislike", hate: "Hate",
                 download: "[ Download ]", reset: "[ Reset ]", saving: "Saving...",
                 labelLang: "Lang:", labelTheme: "Theme:", labelEditNames: "Marker Names:", labelEditTitle: "Table Name:",
+                labelScoring: "Scoring (Points per cell):", labelSpectrum: "Spectrum Setup:", addStop: "+ Add Stop", scoreWord: "Score:",
                 placeholder1: "+ Marker 7", placeholder2: "+ Marker 8",
                 editTable: "[ Edit Table ]", doneEditing: "[ Done Editing ]",
                 addRow: "[ + Row ]", removeRow: "[ - Row ]", addCol: "[ + Col ]", removeCol: "[ - Col ]",
                 importData: "[ Import ]", importLabel: "Import Data:", importPlaceholder: "Paste text here...\n(Lines = Rows, Tabs/Commas = Columns)",
-                share: "[ Share Link ]", shareTitle: "Share your table", shareMsg: "Copy this link to share your setup with others:",
-                close: "[ Close ]", copy: "[ Copy ]", copied: "[ Copied! ]",
-                errTitle: "Error", errSave: "Failed to generate link.", errLoad: "Failed to load shared table."
+                share: "[ Share Link ]", shareTitle: "Share your table", shareMsg: "Copy this link to share your setup:",
+                close: "[ Close ]", copy: "[ Copy ]", copied: "[ Copied! ]", errTitle: "Error", errSave: "Failed to generate link.", errLoad: "Failed to load shared table."
             },
             ru: {
                 title: "Табличка мнений о корабликах",
@@ -505,13 +418,13 @@
                 neutral: "Нейтрально", dislike: "Не нравится", hate: "Ненависть",
                 download: "[ Скачать ]", reset: "[ Сброс ]", saving: "Сохраняем...",
                 labelLang: "Язык:", labelTheme: "Тема:", labelEditNames: "Названия маркеров:", labelEditTitle: "Название таблицы:",
+                labelScoring: "Очки (Баллы за ячейку):", labelSpectrum: "Настройки спектра:", addStop: "+ Добавить", scoreWord: "Итог:",
                 placeholder1: "+ Маркер 7", placeholder2: "+ Маркер 8",
                 editTable: "[ Редактировать ]", doneEditing: "[ Готово ]",
                 addRow: "[ + Ряд ]", removeRow: "[ - Ряд ]", addCol: "[ + Столбец ]", removeCol: "[ - Столбец ]",
                 importData: "[ Импорт ]", importLabel: "Импорт данных:", importPlaceholder: "Вставьте текст сюда...\n(Строки = Ряды, Табы/Запятые = Столбцы)",
                 share: "[ Поделиться ]", shareTitle: "Поделиться таблицей", shareMsg: "Скопируйте ссылку, чтобы поделиться своей версией:",
-                close: "[ Закрыть ]", copy: "[ Копировать ]", copied: "[ Скопировано! ]",
-                errTitle: "Ошибка", errSave: "Не удалось создать ссылку.", errLoad: "Не удалось загрузить чужую таблицу."
+                close: "[ Закрыть ]", copy: "[ Копировать ]", copied: "[ Скопировано! ]", errTitle: "Ошибка", errSave: "Не удалось создать ссылку.", errLoad: "Не удалось загрузить чужую таблицу."
             },
             ua: {
                 title: "Табличка оцінки корабликів",
@@ -519,96 +432,21 @@
                 neutral: "Нейтрально", dislike: "Не подобається", hate: "Ненавиджу",
                 download: "[ Завантажити ]", reset: "[ Скинути ]", saving: "Зберігаємо...",
                 labelLang: "Мова:", labelTheme: "Тема:", labelEditNames: "Назви маркерів:", labelEditTitle: "Назва таблиці:",
+                labelScoring: "Оцінювання (Бали за клітинку):", labelSpectrum: "Налаштування спектру:", addStop: "+ Додати", scoreWord: "Разом:",
                 placeholder1: "+ Маркер 7", placeholder2: "+ Маркер 8",
                 editTable: "[ Редагувати ]", doneEditing: "[ Готово ]",
                 addRow: "[ + Ряд ]", removeRow: "[ - Ряд ]", addCol: "[ + Стовпець ]", removeCol: "[ - Стовпець ]",
                 importData: "[ Імпорт ]", importLabel: "Імпорт даних:", importPlaceholder: "Вставте текст сюди...\n(Рядки = Ряди, Таби/Коми = Стовпці)",
-                share: "[ Поділитися ]", shareTitle: "Поділитися таблицею", shareMsg: "Скопіюйте це посилання, щоб поділитися з іншими:",
-                close: "[ Закрити ]", copy: "[ Копіювати ]", copied: "[ Скопійовано! ]",
-                errTitle: "Помилка", errSave: "Не вдалося створити посилання.", errLoad: "Не вдалося завантажити чужу таблицю."
+                share: "[ Поділитися ]", shareTitle: "Поділитися таблицею", shareMsg: "Скопіюйте це посилання, щоб поділитися:",
+                close: "[ Закрити ]", copy: "[ Копіювати ]", copied: "[ Скопійовано! ]", errTitle: "Помилка", errSave: "Не вдалося створити посилання.", errLoad: "Не вдалося завантажити чужу таблицю."
             }
         };
 
         const themes = {
-            typewriter: {
-                vars: {
-                    '--bg-body': '#e0ddd5', '--bg-paper': '#fdfaf6',
-                    '--text-main': '#111111', '--border-main': '#111111',
-                    '--btn-bg': '#ffffff', '--btn-text': '#111111',
-                    '--btn-hover': '#f0f0f0', '--btn-active': '#111111', '--btn-active-text': '#ffffff'
-                },
-                colors: {
-                    love: '#d9534f', like: '#f0ad4e', platonic: '#e4d836',
-                    neutral: '#8fbc8f', dislike: '#5bc0de', hate: '#9c66a4', 
-                    custom1: '#75b79e', custom2: '#e3a869', default: 'transparent'
-                }
-            },
-            pastel: {
-                vars: {
-                    '--bg-body': '#fdf5e6', '--bg-paper': '#ffffff',
-                    '--text-main': '#5d576b', '--border-main': '#d4c4fb',
-                    '--btn-bg': '#fcf9ff', '--btn-text': '#5d576b',
-                    '--btn-hover': '#f2ebff', '--btn-active': '#d4c4fb', '--btn-active-text': '#5d576b'
-                },
-                colors: {
-                    love: '#ffb3ba', like: '#ffdfba', platonic: '#ffffba',
-                    neutral: '#baffc9', dislike: '#bae1ff', hate: '#e6ccff', 
-                    custom1: '#e2f0cb', custom2: '#ffdac1', default: 'transparent'
-                }
-            },
-            dark_academia: {
-                vars: {
-                    '--bg-body': '#1a1a1a', '--bg-paper': '#2b2a27',
-                    '--text-main': '#d4c8b8', '--border-main': '#4a453d',
-                    '--btn-bg': '#363430', '--btn-text': '#d4c8b8',
-                    '--btn-hover': '#4a453d', '--btn-active': '#5c554a', '--btn-active-text': '#fdfaf6'
-                },
-                colors: {
-                    love: '#722f37', like: '#a66d3a', platonic: '#a89f68',
-                    neutral: '#4f5e4d', dislike: '#46596b', hate: '#56425c', 
-                    custom1: '#3e4a41', custom2: '#6b5b53', default: 'transparent'
-                }
-            },
-            custom: {
-                vars: {
-                    '--bg-body': '#e0ddd5', '--bg-paper': '#ffffff',
-                    '--text-main': '#333333', '--border-main': '#333333',
-                    '--btn-bg': '#f9f9f9', '--btn-text': '#333333',
-                    '--btn-hover': '#e9e9e9', '--btn-active': '#333333', '--btn-active-text': '#ffffff'
-                },
-                colors: {
-                    love: '#ff4d4d', like: '#ffa64d', platonic: '#ffff4d',
-                    neutral: '#4dff4d', dislike: '#4dffff', hate: '#a64dff', 
-                    custom1: '#ff66b2', custom2: '#66ccff', default: 'transparent'
-                }
-            }
-        };
-
-        const names = {
-            "remus": { en: "remus", ru: "римус", ua: "ремус" },
-            "sirius": { en: "sirius", ru: "сириус", ua: "сіріус" },
-            "james": { en: "james", ru: "джеймс", ua: "джеймс" },
-            "lily": { en: "lily", ru: "лили", ua: "лілі" },
-            "peter": { en: "peter", ru: "питер", ua: "пітер" },
-            "regulus": { en: "regulus", ru: "регулус", ua: "регулус" },
-            "barty": { en: "barty", ru: "барти", ua: "барті" },
-            "severus": { en: "severus", ru: "северус", ua: "северус" },
-            "evan": { en: "evan", ru: "эван", ua: "еван" },
-            "sybill": { en: "sybill", ru: "сивилла", ua: "сивілла" },
-            "gilderoy": { en: "gilderoy", ru: "гилдерой", ua: "гілдерой" },
-            "kingsley": { en: "kingsley", ru: "кингсли", ua: "кінгслі" },
-            "marlene": { en: "marlene", ru: "марлин", ua: "марлін" },
-            "pandora": { en: "pandora", ru: "пандора", ua: "пандора" },
-            "mary": { en: "mary", ru: "мэри", ua: "мері" },
-            "dorcas": { en: "dorcas", ru: "доркас", ua: "доркас" },
-            "narcissa": { en: "narcissa", ru: "нарцисса", ua: "нарциса" },
-            "lucius": { en: "lucius", ru: "люциус", ua: "луціус" },
-            "alice": { en: "alice", ru: "алиса", ua: "аліса" },
-            "frank": { en: "frank", ru: "фрэнк", ua: "френк" },
-            "bellatrix": { en: "bellatrix", ru: "беллатриса", ua: "белатриса" },
-            "rita": { en: "rita", ru: "рита", ua: "рита" },
-            "ted": { en: "ted", ru: "тед", ua: "тед" },
-            "andromeda": { en: "andromeda", ru: "андромеда", ua: "андромеда" }
+            typewriter: { vars: { '--bg-body': '#e0ddd5', '--bg-paper': '#fdfaf6', '--text-main': '#111111', '--border-main': '#111111', '--btn-bg': '#ffffff', '--btn-text': '#111111', '--btn-hover': '#f0f0f0', '--btn-active': '#111111', '--btn-active-text': '#ffffff' }, colors: { love: '#d9534f', like: '#f0ad4e', platonic: '#e4d836', neutral: '#8fbc8f', dislike: '#5bc0de', hate: '#9c66a4', custom1: '#75b79e', custom2: '#e3a869', default: 'transparent' } },
+            pastel: { vars: { '--bg-body': '#fdf5e6', '--bg-paper': '#ffffff', '--text-main': '#5d576b', '--border-main': '#d4c4fb', '--btn-bg': '#fcf9ff', '--btn-text': '#5d576b', '--btn-hover': '#f2ebff', '--btn-active': '#d4c4fb', '--btn-active-text': '#5d576b' }, colors: { love: '#ffb3ba', like: '#ffdfba', platonic: '#ffffba', neutral: '#baffc9', dislike: '#bae1ff', hate: '#e6ccff', custom1: '#e2f0cb', custom2: '#ffdac1', default: 'transparent' } },
+            dark_academia: { vars: { '--bg-body': '#1a1a1a', '--bg-paper': '#2b2a27', '--text-main': '#d4c8b8', '--border-main': '#4a453d', '--btn-bg': '#363430', '--btn-text': '#d4c8b8', '--btn-hover': '#4a453d', '--btn-active': '#5c554a', '--btn-active-text': '#fdfaf6' }, colors: { love: '#722f37', like: '#a66d3a', platonic: '#a89f68', neutral: '#4f5e4d', dislike: '#46596b', hate: '#56425c', custom1: '#3e4a41', custom2: '#6b5b53', default: 'transparent' } },
+            custom: { vars: { '--bg-body': '#e0ddd5', '--bg-paper': '#ffffff', '--text-main': '#333333', '--border-main': '#333333', '--btn-bg': '#f9f9f9', '--btn-text': '#333333', '--btn-hover': '#e9e9e9', '--btn-active': '#333333', '--btn-active-text': '#ffffff' }, colors: { love: '#ff4d4d', like: '#ffa64d', platonic: '#ffff4d', neutral: '#4dff4d', dislike: '#4dffff', hate: '#a64dff', custom1: '#ff66b2', custom2: '#66ccff', default: 'transparent' } }
         };
 
         const shipsData = [
@@ -628,6 +466,14 @@
         let currentTheme = 'typewriter';
         let activeBrushIndex = 0; 
         let isEditMode = false;
+        
+        // Gradient Data
+        let gradientStops = [
+            { color: '#9c66a4', pos: 0 },   // Hate
+            { color: '#e0ddd5', pos: 50 },  // Neutral
+            { color: '#d9534f', pos: 100 }  // Love
+        ];
+
         const table = document.getElementById('ship-table');
         const root = document.documentElement;
 
@@ -645,65 +491,127 @@
 
             const i1 = document.getElementById('input-custom1');
             const i2 = document.getElementById('input-custom2');
-            const l1 = document.getElementById('leg-custom1');
-            const l2 = document.getElementById('leg-custom2');
-            const u1 = document.getElementById('ui-custom1');
-            const u2 = document.getElementById('ui-custom2');
-            const pg1 = document.getElementById('picker-group-custom1');
-            const pg2 = document.getElementById('picker-group-custom2');
-            const pl1 = document.getElementById('label-custom-custom1');
-            const pl2 = document.getElementById('label-custom-custom2');
-
-            function updateMarker(inputElem, legendElem, uiElem, stateIndex, pickerGroup, pickerLabel) {
+            function updateMarker(inputElem, legendElem, uiElem, stateIndex, pickerGroup, scoreLabel) {
                 const val = inputElem.value.trim();
                 if(val) {
                     legendElem.style.display = 'flex';
                     uiElem.textContent = val;
                     if(!activeStates.includes(stateIndex)) activeStates.push(stateIndex);
                     activeStates.sort((a, b) => a - b);
-                    
-                    pickerLabel.textContent = val;
-                    if(currentTheme === 'custom') pickerGroup.style.display = 'flex';
+                    if(currentTheme === 'custom' && pickerGroup) pickerGroup.style.display = 'flex';
+                    scoreLabel.style.display = 'block';
                 } else {
                     legendElem.style.display = 'none';
                     activeStates = activeStates.filter(s => s !== stateIndex);
-                    
                     if(activeBrushIndex === stateIndex) setActiveBrush(0);
-                    pickerGroup.style.display = 'none';
+                    if(pickerGroup) pickerGroup.style.display = 'none';
+                    scoreLabel.style.display = 'none';
+                    document.getElementById(`score-custom${stateIndex-6}`).value = 0;
+                    calculateScore();
                 }
                 updateModeHint();
             }
 
-            i1.addEventListener('input', () => updateMarker(i1, l1, u1, 7, pg1, pl1));
-            i2.addEventListener('input', () => updateMarker(i2, l2, u2, 8, pg2, pl2));
+            i1.addEventListener('input', () => updateMarker(i1, document.getElementById('leg-custom1'), document.getElementById('ui-custom1'), 7, document.getElementById('picker-group-custom1'), document.getElementById('label-score-c1')));
+            i2.addEventListener('input', () => updateMarker(i2, document.getElementById('leg-custom2'), document.getElementById('ui-custom2'), 8, document.getElementById('picker-group-custom2'), document.getElementById('label-score-c2')));
         }
 
-        // --- NEW: Title Customization Logic ---
         document.getElementById('input-table-title').addEventListener('input', (e) => {
-            const val = e.target.value.trim();
-            document.getElementById('ui-title').textContent = val || uiText[currentLang].title;
+            document.getElementById('ui-title').textContent = e.target.value.trim() || uiText[currentLang].title;
         });
 
+        // --- NEW: Spectrum & Calculation Logic ---
+        function renderGradientEditor() {
+            const container = document.getElementById('gradient-stops-list');
+            container.innerHTML = '';
+            gradientStops.forEach((stop, index) => {
+                const row = document.createElement('div');
+                row.className = 'stop-row';
+                row.innerHTML = `
+                    <input type="color" value="${stop.color}" onchange="updateGradientStop(${index}, 'color', this.value)">
+                    <input type="number" class="marker-input score-input" value="${stop.pos}" min="0" max="100" onchange="updateGradientStop(${index}, 'pos', this.value)"> %
+                    <button class="setting-btn" onclick="removeGradientStop(${index})" style="padding: 4px 8px; font-size:12px;">X</button>
+                `;
+                container.appendChild(row);
+            });
+            updateSpectrumBar();
+        }
+
+        function addGradientStop() {
+            gradientStops.push({ color: '#ffffff', pos: 50 });
+            renderGradientEditor();
+        }
+
+        function removeGradientStop(index) {
+            if(gradientStops.length > 2) {
+                gradientStops.splice(index, 1);
+                renderGradientEditor();
+            }
+        }
+
+        function updateGradientStop(index, key, value) {
+            gradientStops[index][key] = key === 'pos' ? Math.max(0, Math.min(100, parseInt(value) || 0)) : value;
+            renderGradientEditor();
+        }
+
+        function updateSpectrumBar() {
+            const sorted = [...gradientStops].sort((a,b) => a.pos - b.pos);
+            const str = sorted.map(s => `${s.color} ${s.pos}%`).join(', ');
+            document.getElementById('ui-gradient-bar').style.background = `linear-gradient(to right, ${str})`;
+            calculateScore(); // Re-adjust marker
+        }
+
+        function calculateScore() {
+            let total = 0;
+            const cells = table.getElementsByTagName('td');
+            
+            const points = {
+                0: parseInt(document.getElementById('score-default').value) || 0,
+                1: parseInt(document.getElementById('score-love').value) || 0,
+                2: parseInt(document.getElementById('score-like').value) || 0,
+                3: parseInt(document.getElementById('score-platonic').value) || 0,
+                4: parseInt(document.getElementById('score-neutral').value) || 0,
+                5: parseInt(document.getElementById('score-dislike').value) || 0,
+                6: parseInt(document.getElementById('score-hate').value) || 0,
+                7: parseInt(document.getElementById('score-custom1').value) || 0,
+                8: parseInt(document.getElementById('score-custom2').value) || 0
+            };
+
+            for(let cell of cells) {
+                total += points[cell.dataset.stateIndex || 0];
+            }
+
+            const min = parseInt(document.getElementById('spec-min-input').value) || -50;
+            const max = parseInt(document.getElementById('spec-max-input').value) || 50;
+
+            document.getElementById('ui-spec-min-val').textContent = min;
+            document.getElementById('ui-spec-max-val').textContent = max;
+            document.getElementById('ui-spec-total').textContent = `${uiText[currentLang].scoreWord} ${total}`;
+
+            let range = max - min;
+            if(range === 0) range = 1; // prevent divide by zero
+            let percent = ((total - min) / range) * 100;
+            percent = Math.max(0, Math.min(100, percent)); // clamp
+
+            document.getElementById('ui-spec-marker').style.left = `${percent}%`;
+        }
+        // --- END Spectrum Logic ---
+
         function cellClickHandler(e) {
-            const cell = e.currentTarget;
             if (isEditMode) return;
+            const cell = e.currentTarget;
             
             if (activeBrushIndex === 0) {
                 let currentIndex = parseInt(cell.dataset.stateIndex || 0);
                 let activeIdx = activeStates.indexOf(currentIndex);
                 if(activeIdx === -1) activeIdx = 0;
-                
-                let nextActiveIdx = (activeIdx + 1) % activeStates.length;
-                cell.dataset.stateIndex = activeStates[nextActiveIdx];
+                cell.dataset.stateIndex = activeStates[(activeIdx + 1) % activeStates.length];
             } else {
                 let currentIndex = parseInt(cell.dataset.stateIndex || 0);
-                if (currentIndex === activeBrushIndex) {
-                    cell.dataset.stateIndex = 0;
-                } else {
-                    cell.dataset.stateIndex = activeBrushIndex;
-                }
+                cell.dataset.stateIndex = (currentIndex === activeBrushIndex) ? 0 : activeBrushIndex;
             }
             updateCellColor(cell);
+            calculateScore(); // Re-calc score
         }
 
         function initTable() {
@@ -719,6 +627,7 @@
                 });
                 table.appendChild(tr);
             });
+            calculateScore();
         }
 
         function updateCellColor(cell) {
@@ -728,181 +637,131 @@
 
         function refreshTableColors() {
             const cells = table.getElementsByTagName('td');
-            for (let cell of cells) {
-                updateCellColor(cell);
-            }
+            for (let cell of cells) updateCellColor(cell);
             
-            root.style.setProperty('--color-love', themes[currentTheme].colors.love);
-            root.style.setProperty('--color-like', themes[currentTheme].colors.like);
-            root.style.setProperty('--color-platonic', themes[currentTheme].colors.platonic);
-            root.style.setProperty('--color-neutral', themes[currentTheme].colors.neutral);
-            root.style.setProperty('--color-dislike', themes[currentTheme].colors.dislike);
-            root.style.setProperty('--color-hate', themes[currentTheme].colors.hate);
-            root.style.setProperty('--color-custom1', themes[currentTheme].colors.custom1);
-            root.style.setProperty('--color-custom2', themes[currentTheme].colors.custom2);
+            for(let key in themes[currentTheme].colors) {
+                root.style.setProperty(`--color-${key}`, themes[currentTheme].colors[key]);
+            }
         }
 
         function setTheme(themeName) {
             currentTheme = themeName;
-            
             document.querySelectorAll('[id^="btn-theme-"]').forEach(btn => btn.classList.remove('active'));
             document.getElementById(`btn-theme-${themeName === 'dark_academia' ? 'dark' : themeName}`).classList.add('active');
 
             const customPanel = document.getElementById('custom-palette-settings');
             customPanel.style.display = themeName === 'custom' ? 'flex' : 'none';
-            
             if(themeName === 'custom') {
                 document.getElementById('picker-group-custom1').style.display = document.getElementById('input-custom1').value.trim() ? 'flex' : 'none';
                 document.getElementById('picker-group-custom2').style.display = document.getElementById('input-custom2').value.trim() ? 'flex' : 'none';
             }
 
-            const themeVars = themes[themeName].vars;
-            for (const [key, value] of Object.entries(themeVars)) {
+            for (const [key, value] of Object.entries(themes[themeName].vars)) {
                 root.style.setProperty(key, value);
             }
-
             refreshTableColors();
         }
 
         document.querySelectorAll('input[type="color"]').forEach(input => {
-            input.addEventListener('input', function() {
-                if (currentTheme === 'custom') {
-                    const stateName = this.id.replace('color-', '');
-                    themes.custom.colors[stateName] = this.value;
-                    refreshTableColors();
-                }
-            });
-        });
-
-        function translateName(currentName, targetLang) {
-            const query = currentName.toLowerCase().trim();
-            for (const key in names) {
-                const variants = names[key];
-                if (query === variants.en || query === variants.ru || query === variants.ua) {
-                    return variants[targetLang];
-                }
+            if(!input.onchange) { // ignore gradient pickers
+                input.addEventListener('input', function() {
+                    if (currentTheme === 'custom') {
+                        themes.custom.colors[this.id.replace('color-', '')] = this.value;
+                        refreshTableColors();
+                    }
+                });
             }
-            return currentName;
-        }
+        });
 
         function setLang(lang) {
             currentLang = lang;
-            
             document.querySelectorAll('[id^="btn-"]').forEach(btn => {
-                if(btn.id.startsWith('btn-en') || btn.id.startsWith('btn-ru') || btn.id.startsWith('btn-ua')) {
-                    btn.classList.remove('active');
-                }
+                if(['btn-en','btn-ru','btn-ua'].includes(btn.id)) btn.classList.remove('active');
             });
             document.getElementById(`btn-${lang}`).classList.add('active');
 
-            const presets = ['love', 'like', 'platonic', 'neutral', 'dislike', 'hate'];
-            presets.forEach(key => {
+            const t = uiText[lang];
+            ['love', 'like', 'platonic', 'neutral', 'dislike', 'hate'].forEach(key => {
                 const input = document.getElementById(`input-name-${key}`);
-                input.value = uiText[lang][key];
+                input.value = t[key];
                 document.getElementById(`ui-${key}`).textContent = input.value;
                 document.getElementById(`label-custom-${key}`).textContent = input.value;
             });
 
-            // Update UI Title taking custom inputs into consideration
             const titleInput = document.getElementById('input-table-title');
-            titleInput.placeholder = uiText[lang].title;
-            const customTitle = titleInput.value.trim();
-            document.getElementById('ui-title').textContent = customTitle || uiText[lang].title;
-            document.getElementById('label-edit-title').textContent = uiText[lang].labelEditTitle;
+            titleInput.placeholder = t.title;
+            document.getElementById('ui-title').textContent = titleInput.value.trim() || t.title;
             
-            document.getElementById('download-btn').textContent = uiText[lang].download;
-            document.getElementById('reset-btn').textContent = uiText[lang].reset;
-            document.getElementById('label-lang').textContent = uiText[lang].labelLang;
-            document.getElementById('label-theme').textContent = uiText[lang].labelTheme;
-            document.getElementById('label-edit-names').textContent = uiText[lang].labelEditNames;
-            document.getElementById('input-custom1').placeholder = uiText[lang].placeholder1;
-            document.getElementById('input-custom2').placeholder = uiText[lang].placeholder2;
+            document.getElementById('label-edit-title').textContent = t.labelEditTitle;
+            document.getElementById('label-scoring').textContent = t.labelScoring;
+            document.getElementById('label-spectrum-setup').textContent = t.labelSpectrum;
+            document.getElementById('btn-add-stop').textContent = t.addStop;
             
-            document.getElementById('edit-mode-btn').textContent = isEditMode ? uiText[lang].doneEditing : uiText[lang].editTable;
-            document.getElementById('btn-add-row').textContent = uiText[lang].addRow;
-            document.getElementById('btn-rm-row').textContent = uiText[lang].removeRow;
-            document.getElementById('btn-add-col').textContent = uiText[lang].addCol;
-            document.getElementById('btn-rm-col').textContent = uiText[lang].removeCol;
-            document.getElementById('share-btn').textContent = uiText[lang].share;
+            document.getElementById('download-btn').textContent = t.download;
+            document.getElementById('reset-btn').textContent = t.reset;
+            document.getElementById('label-lang').textContent = t.labelLang;
+            document.getElementById('label-theme').textContent = t.labelTheme;
+            document.getElementById('label-edit-names').textContent = t.labelEditNames;
+            document.getElementById('input-custom1').placeholder = t.placeholder1;
+            document.getElementById('input-custom2').placeholder = t.placeholder2;
             
-            document.getElementById('modal-close-btn').textContent = uiText[lang].close;
-            document.getElementById('modal-copy-btn').textContent = uiText[lang].copy;
+            document.getElementById('edit-mode-btn').textContent = isEditMode ? t.doneEditing : t.editTable;
+            document.getElementById('btn-add-row').textContent = t.addRow;
+            document.getElementById('btn-rm-row').textContent = t.removeRow;
+            document.getElementById('btn-add-col').textContent = t.addCol;
+            document.getElementById('btn-rm-col').textContent = t.removeCol;
+            document.getElementById('share-btn').textContent = t.share;
             
-            document.getElementById('btn-import-data').textContent = uiText[lang].importData;
-            document.getElementById('label-import').textContent = uiText[lang].importLabel;
-            document.getElementById('import-textarea').placeholder = uiText[lang].importPlaceholder;
+            document.getElementById('modal-close-btn').textContent = t.close;
+            document.getElementById('modal-copy-btn').textContent = t.copy;
+            
+            document.getElementById('btn-import-data').textContent = t.importData;
+            document.getElementById('label-import').textContent = t.importLabel;
+            document.getElementById('import-textarea').placeholder = t.importPlaceholder;
             
             updateModeHint();
-
-            const cells = table.getElementsByTagName('td');
-            for (let cell of cells) {
-                const parts = cell.textContent.split('/');
-                const translatedParts = parts.map(p => translateName(p, lang));
-                cell.innerHTML = translatedParts.join('/<wbr>');
-            }
+            calculateScore(); // Updates Score string translation
         }
 
         document.getElementById('reset-btn').addEventListener('click', () => {
             const cells = table.getElementsByTagName('td');
-            for (let cell of cells) {
-                cell.dataset.stateIndex = 0;
-                updateCellColor(cell);
-            }
+            for (let cell of cells) { cell.dataset.stateIndex = 0; updateCellColor(cell); }
+            calculateScore();
         });
         
         function setActiveBrush(index) {
             activeBrushIndex = index;
-            
             document.querySelectorAll('.legend-item').forEach(item => item.classList.remove('active-brush'));
-            if (index > 0) {
-                document.querySelector(`.legend-item[data-state="${index}"]`).classList.add('active-brush');
-            }
-            
+            if (index > 0) document.querySelector(`.legend-item[data-state="${index}"]`).classList.add('active-brush');
             updateModeHint();
         }
 
         function updateModeHint() {
             const hintEl = document.getElementById('ui-mode-hint');
             if (activeBrushIndex === 0) {
-                if(currentLang === 'ua') hintEl.textContent = "Режим: Циклічний (Натисніть на легенду або цифри 1-8, щоб малювати певним кольором)";
-                else if(currentLang === 'ru') hintEl.textContent = "Режим: Циклический (Нажмите на легенду или цифры 1-8 для рисования конкретным цветом)";
-                else hintEl.textContent = "Mode: Cycle colors (Click a legend item or press 1-8 to paint specific colors)";
+                if(currentLang === 'ua') hintEl.textContent = "Режим: Циклічний (Натисніть на легенду або цифри 1-8)";
+                else if(currentLang === 'ru') hintEl.textContent = "Режим: Циклический (Нажмите на легенду или цифры 1-8)";
+                else hintEl.textContent = "Mode: Cycle colors (Click a legend item or press 1-8)";
             } else {
-                let colorName = "";
-                if(activeBrushIndex === 7) colorName = document.getElementById('input-custom1').value;
-                else if(activeBrushIndex === 8) colorName = document.getElementById('input-custom2').value;
-                else {
-                    const stateKey = stateOrder[activeBrushIndex];
-                    colorName = document.getElementById(`input-name-${stateKey}`).value.trim() || uiText[currentLang][stateKey];
-                }
-                
-                if(currentLang === 'ua') hintEl.textContent = `Режим: Малювання (${colorName}). Натисніть Esc для скасування.`;
-                else if(currentLang === 'ru') hintEl.textContent = `Режим: Рисование (${colorName}). Нажмите Esc для отмены.`;
-                else hintEl.textContent = `Mode: Painting (${colorName}). Press Esc to cancel.`;
+                let c = (activeBrushIndex === 7) ? document.getElementById('input-custom1').value :
+                        (activeBrushIndex === 8) ? document.getElementById('input-custom2').value :
+                        document.getElementById(`input-name-${stateOrder[activeBrushIndex]}`).value || uiText[currentLang][stateOrder[activeBrushIndex]];
+                if(currentLang === 'ua') hintEl.textContent = `Режим: Малювання (${c}). Натисніть Esc для скасування.`;
+                else if(currentLang === 'ru') hintEl.textContent = `Режим: Рисование (${c}). Нажмите Esc для отмены.`;
+                else hintEl.textContent = `Mode: Painting (${c}). Press Esc to cancel.`;
             }
         }
 
         document.querySelectorAll('.legend-item').forEach(item => {
-            item.addEventListener('click', function() {
-                const state = parseInt(this.dataset.state);
-                if (activeBrushIndex === state) {
-                    setActiveBrush(0);
-                } else {
-                    setActiveBrush(state);
-                }
-            });
+            item.addEventListener('click', function() { setActiveBrush(activeBrushIndex === parseInt(this.dataset.state) ? 0 : parseInt(this.dataset.state)); });
         });
 
         document.addEventListener('keydown', function(event) {
             if (event.key >= '1' && event.key <= '8') {
-                const state = parseInt(event.key);
-                if(state < 7 || activeStates.includes(state)) {
-                    setActiveBrush(state);
-                }
+                const s = parseInt(event.key);
+                if(s < 7 || activeStates.includes(s)) setActiveBrush(s);
             }
-            if (event.key === 'Escape') {
-                setActiveBrush(0);
-            }
+            if (event.key === 'Escape') setActiveBrush(0);
         });
 
         document.getElementById('edit-mode-btn').addEventListener('click', () => {
@@ -910,115 +769,67 @@
             const btn = document.getElementById('edit-mode-btn');
             const controls = document.getElementById('edit-table-controls');
             const cells = table.getElementsByTagName('td');
-
             if (isEditMode) {
-                btn.textContent = uiText[currentLang].doneEditing;
-                btn.classList.add('active');
-                controls.style.display = 'flex';
+                btn.textContent = uiText[currentLang].doneEditing; btn.classList.add('active'); controls.style.display = 'flex';
                 for(let cell of cells) cell.setAttribute('contenteditable', 'true');
                 setActiveBrush(0); 
             } else {
-                btn.textContent = uiText[currentLang].editTable;
-                btn.classList.remove('active');
-                controls.style.display = 'none';
+                btn.textContent = uiText[currentLang].editTable; btn.classList.remove('active'); controls.style.display = 'none';
                 for(let cell of cells) cell.setAttribute('contenteditable', 'false');
             }
         });
 
         function addRow() {
-            const colsCount = table.querySelector('tr')?.children.length || 4;
+            const cols = table.querySelector('tr')?.children.length || 4;
             const tr = document.createElement('tr');
-            for(let i=0; i < colsCount; i++) {
-                const td = document.createElement('td');
-                td.dataset.stateIndex = 0;
-                td.textContent = "new/ship";
-                td.setAttribute('contenteditable', 'true');
-                td.addEventListener('click', cellClickHandler);
-                tr.appendChild(td);
+            for(let i=0; i < cols; i++) {
+                const td = document.createElement('td'); td.dataset.stateIndex = 0; td.textContent = "new/ship";
+                td.setAttribute('contenteditable', 'true'); td.addEventListener('click', cellClickHandler); tr.appendChild(td);
             }
-            table.appendChild(tr);
-            refreshTableColors();
+            table.appendChild(tr); refreshTableColors(); calculateScore();
         }
 
-        function removeRow() {
-            if(table.querySelectorAll('tr').length > 1) {
-                table.removeChild(table.lastElementChild);
-            }
-        }
-
+        function removeRow() { if(table.querySelectorAll('tr').length > 1) table.removeChild(table.lastElementChild); calculateScore(); }
+        
         function addColumn() {
-            const rows = table.querySelectorAll('tr');
-            rows.forEach(tr => {
-                const td = document.createElement('td');
-                td.dataset.stateIndex = 0;
-                td.textContent = "new/ship";
-                td.setAttribute('contenteditable', 'true');
-                td.addEventListener('click', cellClickHandler);
-                tr.appendChild(td);
+            table.querySelectorAll('tr').forEach(tr => {
+                const td = document.createElement('td'); td.dataset.stateIndex = 0; td.textContent = "new/ship";
+                td.setAttribute('contenteditable', 'true'); td.addEventListener('click', cellClickHandler); tr.appendChild(td);
             });
-            refreshTableColors();
+            refreshTableColors(); calculateScore();
         }
 
         function removeColumn() {
             const rows = table.querySelectorAll('tr');
-            if(rows[0] && rows[0].children.length > 1) {
-                rows.forEach(tr => {
-                    tr.removeChild(tr.lastElementChild);
-                });
-            }
+            if(rows[0] && rows[0].children.length > 1) { rows.forEach(tr => tr.removeChild(tr.lastElementChild)); calculateScore(); }
         }
 
         document.getElementById('btn-import-data').addEventListener('click', () => {
             const text = document.getElementById('import-textarea').value.trim();
             if (!text) return;
-
-            const lines = text.split('\n');
-            if (lines.length === 0) return;
-
             table.innerHTML = '';
-            
-            lines.forEach(line => {
+            text.split('\n').forEach(line => {
                 const tr = document.createElement('tr');
-                let cols = [line];
-                if (line.includes('\t')) {
-                    cols = line.split('\t');
-                } else if (line.includes(',')) {
-                    cols = line.split(',');
-                }
-                
+                const cols = line.includes('\t') ? line.split('\t') : (line.includes(',') ? line.split(',') : [line]);
                 cols.forEach(colData => {
-                    const td = document.createElement('td');
-                    td.dataset.stateIndex = 0;
-                    td.textContent = colData.trim();
-                    td.setAttribute('contenteditable', 'true');
-                    td.addEventListener('click', cellClickHandler);
-                    tr.appendChild(td);
+                    const td = document.createElement('td'); td.dataset.stateIndex = 0; td.textContent = colData.trim();
+                    td.setAttribute('contenteditable', 'true'); td.addEventListener('click', cellClickHandler); tr.appendChild(td);
                 });
                 table.appendChild(tr);
             });
-            refreshTableColors();
+            refreshTableColors(); calculateScore();
             document.getElementById('import-textarea').value = '';
         });
 
         document.getElementById('download-btn').addEventListener('click', () => {
             const captureArea = document.getElementById('capture-area');
             const originalBtnText = document.getElementById('download-btn').textContent;
-            
             document.getElementById('download-btn').textContent = `[ ${uiText[currentLang].saving} ]`;
-
-            html2canvas(captureArea, {
-                scale: 2,
-                backgroundColor: themes[currentTheme].vars['--bg-paper'],
-                useCORS: true 
-            }).then(canvas => {
+            html2canvas(captureArea, { scale: 2, backgroundColor: themes[currentTheme].vars['--bg-paper'], useCORS: true }).then(canvas => {
                 const link = document.createElement('a');
-                link.download = `ships_opinion_${currentTheme}_${currentLang}.png`;
-                link.href = canvas.toDataURL('image/png');
-                link.click();
-                
+                link.download = `ships_opinion_${currentTheme}_${currentLang}.png`; link.href = canvas.toDataURL('image/png'); link.click();
                 document.getElementById('download-btn').textContent = originalBtnText;
             }).catch(err => {
-                console.error('Screenshot error:', err);
                 showModal(uiText[currentLang].errTitle, "Photo save error. Try manual screenshot.");
                 document.getElementById('download-btn').textContent = originalBtnText;
             });
@@ -1027,155 +838,91 @@
         function showModal(title, message, link = null) {
             document.getElementById('modal-title').textContent = title;
             document.getElementById('modal-message').textContent = message;
-            
-            const linkInput = document.getElementById('modal-link');
-            const copyBtn = document.getElementById('modal-copy-btn');
-            
+            const linkInput = document.getElementById('modal-link'); const copyBtn = document.getElementById('modal-copy-btn');
             if (link) {
-                linkInput.style.display = 'block';
-                linkInput.value = link;
-                copyBtn.style.display = 'block';
-                
-                copyBtn.onclick = () => {
-                    linkInput.select();
-                    document.execCommand('copy');
-                    copyBtn.textContent = uiText[currentLang].copied;
-                    setTimeout(() => copyBtn.textContent = uiText[currentLang].copy, 2000);
-                };
-            } else {
-                linkInput.style.display = 'none';
-                copyBtn.style.display = 'none';
-            }
-            
+                linkInput.style.display = 'block'; linkInput.value = link; copyBtn.style.display = 'block';
+                copyBtn.onclick = () => { linkInput.select(); document.execCommand('copy'); copyBtn.textContent = uiText[currentLang].copied; setTimeout(() => copyBtn.textContent = uiText[currentLang].copy, 2000); };
+            } else { linkInput.style.display = 'none'; copyBtn.style.display = 'none'; }
             document.getElementById('custom-modal').style.display = 'flex';
         }
 
-        document.getElementById('modal-close-btn').addEventListener('click', () => {
-            document.getElementById('custom-modal').style.display = 'none';
-        });
+        document.getElementById('modal-close-btn').addEventListener('click', () => document.getElementById('custom-modal').style.display = 'none');
 
-        window.setLang = setLang;
-        window.setTheme = setTheme;
-        window.addRow = addRow;
-        window.removeRow = removeRow;
-        window.addColumn = addColumn;
-        window.removeColumn = removeColumn;
-
-        // --- ОНОВЛЕНА СИСТЕМА ШЕРИНГУ ЗІ СТИСНЕННЯМ ---
-
+        // SHARE LINK LOGIC
         function generateShareLink() {
             try {
                 const tableData = [];
                 document.querySelectorAll('#ship-table tr').forEach(row => {
                     const rowData = [];
-                    row.querySelectorAll('td').forEach(cell => {
-                        rowData.push({
-                            text: cell.textContent,
-                            stateIndex: parseInt(cell.dataset.stateIndex || 0)
-                        });
-                    });
+                    row.querySelectorAll('td').forEach(cell => rowData.push({ text: cell.textContent, stateIndex: parseInt(cell.dataset.stateIndex || 0) }));
                     tableData.push(rowData);
                 });
 
-                const markerNames = {
-                    love: document.getElementById('input-name-love').value,
-                    like: document.getElementById('input-name-like').value,
-                    platonic: document.getElementById('input-name-platonic').value,
-                    neutral: document.getElementById('input-name-neutral').value,
-                    dislike: document.getElementById('input-name-dislike').value,
-                    hate: document.getElementById('input-name-hate').value,
-                    custom1: document.getElementById('input-custom1').value,
-                    custom2: document.getElementById('input-custom2').value
+                const scores = {
+                    0: document.getElementById('score-default').value, 1: document.getElementById('score-love').value,
+                    2: document.getElementById('score-like').value, 3: document.getElementById('score-platonic').value,
+                    4: document.getElementById('score-neutral').value, 5: document.getElementById('score-dislike').value,
+                    6: document.getElementById('score-hate').value, 7: document.getElementById('score-custom1').value,
+                    8: document.getElementById('score-custom2').value
                 };
 
                 const state = { 
-                    grid: tableData, 
-                    markerNames: markerNames,
-                    theme: currentTheme,
-                    lang: currentLang,
-                    customColors: themes.custom.colors,
-                    customTitle: document.getElementById('input-table-title').value.trim() // Save Title
+                    grid: tableData, theme: currentTheme, lang: currentLang, customColors: themes.custom.colors,
+                    customTitle: document.getElementById('input-table-title').value.trim(),
+                    markerNames: { love: document.getElementById('input-name-love').value, like: document.getElementById('input-name-like').value, platonic: document.getElementById('input-name-platonic').value, neutral: document.getElementById('input-name-neutral').value, dislike: document.getElementById('input-name-dislike').value, hate: document.getElementById('input-name-hate').value, custom1: document.getElementById('input-custom1').value, custom2: document.getElementById('input-custom2').value },
+                    scores: scores, spectrumStops: gradientStops,
+                    specMin: document.getElementById('spec-min-input').value, specMax: document.getElementById('spec-max-input').value
                 };
                 
-                // ТУТ ВІДБУВАЄТЬСЯ СТИСНЕННЯ (LZString)
-                const jsonString = JSON.stringify(state);
-                const encodedState = LZString.compressToEncodedURIComponent(jsonString);
-                
-                const shareUrl = window.location.origin + window.location.pathname + '?map=' + encodedState;
-
+                const shareUrl = window.location.origin + window.location.pathname + '?map=' + LZString.compressToEncodedURIComponent(JSON.stringify(state));
                 showModal(uiText[currentLang].shareTitle, uiText[currentLang].shareMsg, shareUrl);
-            } catch (e) {
-                showModal(uiText[currentLang].errTitle, uiText[currentLang].errSave);
-                console.error(e);
-            }
+            } catch (e) { showModal(uiText[currentLang].errTitle, uiText[currentLang].errSave); }
         }
 
         function loadSharedLink() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const mapData = urlParams.get('map');
-            
+            const mapData = new URLSearchParams(window.location.search).get('map');
             if (mapData) {
                 try {
-                    // ТУТ ВІДБУВАЄТЬСЯ РОЗПАКУВАННЯ (LZString)
-                    const decompressedString = LZString.decompressFromEncodedURIComponent(mapData);
-                    if (!decompressedString) throw new Error("Decompression failed");
-                    
-                    const state = JSON.parse(decompressedString);
-                    
+                    const state = JSON.parse(LZString.decompressFromEncodedURIComponent(mapData));
                     if (state.lang) setLang(state.lang);
-
-                    if (state.customTitle) {
-                        const titleInput = document.getElementById('input-table-title');
-                        titleInput.value = state.customTitle;
-                        document.getElementById('ui-title').textContent = state.customTitle;
-                    }
-
+                    if (state.customTitle) { document.getElementById('input-table-title').value = state.customTitle; document.getElementById('ui-title').textContent = state.customTitle; }
                     if (state.customColors) {
                         themes.custom.colors = state.customColors;
-                        Object.keys(state.customColors).forEach(key => {
-                            const picker = document.getElementById('color-' + key);
-                            if (picker) picker.value = state.customColors[key];
-                        });
+                        Object.keys(state.customColors).forEach(k => { if(document.getElementById('color-' + k)) document.getElementById('color-' + k).value = state.customColors[k]; });
                     }
-
                     if (state.theme) setTheme(state.theme);
-
                     if (state.markerNames) {
-                        Object.keys(state.markerNames).forEach(key => {
-                            const inputId = key.startsWith('custom') ? 'input-' + key : 'input-name-' + key;
-                            const input = document.getElementById(inputId);
-                            if (input && state.markerNames[key]) {
-                                input.value = state.markerNames[key];
-                                input.dispatchEvent(new Event('input'));
-                            }
+                        Object.keys(state.markerNames).forEach(k => {
+                            const inp = document.getElementById(k.startsWith('custom') ? 'input-' + k : 'input-name-' + k);
+                            if (inp && state.markerNames[k]) { inp.value = state.markerNames[k]; inp.dispatchEvent(new Event('input')); }
                         });
                     }
+                    if(state.scores) {
+                        document.getElementById('score-default').value = state.scores[0] || 0; document.getElementById('score-love').value = state.scores[1] || 0;
+                        document.getElementById('score-like').value = state.scores[2] || 0; document.getElementById('score-platonic').value = state.scores[3] || 0;
+                        document.getElementById('score-neutral').value = state.scores[4] || 0; document.getElementById('score-dislike').value = state.scores[5] || 0;
+                        document.getElementById('score-hate').value = state.scores[6] || 0; document.getElementById('score-custom1').value = state.scores[7] || 0;
+                        document.getElementById('score-custom2').value = state.scores[8] || 0;
+                    }
+                    if(state.specMin) document.getElementById('spec-min-input').value = state.specMin;
+                    if(state.specMax) document.getElementById('spec-max-input').value = state.specMax;
+                    if(state.spectrumStops) gradientStops = state.spectrumStops;
 
                     if (state.grid && state.grid.length > 0) {
                         table.innerHTML = '';
                         state.grid.forEach(rowData => {
                             const tr = document.createElement('tr');
                             rowData.forEach(cellData => {
-                                const td = document.createElement('td');
-                                td.dataset.stateIndex = cellData.stateIndex;
-                                
-                                const parts = cellData.text.split('/');
-                                const translatedParts = parts.map(p => translateName(p, state.lang || currentLang));
-                                td.innerHTML = translatedParts.join('/<wbr>');
-                                
-                                td.setAttribute('contenteditable', 'false');
-                                td.addEventListener('click', cellClickHandler);
-                                updateCellColor(td);
-                                tr.appendChild(td);
+                                const td = document.createElement('td'); td.dataset.stateIndex = cellData.stateIndex;
+                                td.innerHTML = cellData.text; td.setAttribute('contenteditable', 'false'); td.addEventListener('click', cellClickHandler);
+                                updateCellColor(td); tr.appendChild(td);
                             });
                             table.appendChild(tr);
                         });
                     }
-                } catch (error) {
-                    showModal(uiText[currentLang].errTitle, uiText[currentLang].errLoad);
-                    console.error(error);
-                }
+                } catch (error) { showModal(uiText[currentLang].errTitle, uiText[currentLang].errLoad); }
             }
+            renderGradientEditor(); // Always render stops on load
         }
 
         document.getElementById('share-btn').addEventListener('click', generateShareLink);
