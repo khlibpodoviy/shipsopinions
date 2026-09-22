@@ -186,6 +186,7 @@
             letter-spacing: -1px;
             color: var(--text-main);
             transition: color 0.3s;
+            word-wrap: break-word;
         }
 
         .legend {
@@ -388,6 +389,11 @@
         </div>
 
         <div class="settings-row">
+            <span class="settings-label" id="label-edit-title">Table Name:</span>
+            <input type="text" id="input-table-title" class="marker-input" style="width: 100%; max-width: 400px;" placeholder="Ships opinion table">
+        </div>
+
+        <div class="settings-row">
             <span class="settings-label" id="label-theme">Theme:</span>
             <button class="setting-btn active" onclick="setTheme('typewriter')" id="btn-theme-typewriter">Typewriter</button>
             <button class="setting-btn" onclick="setTheme('pastel')" id="btn-theme-pastel">Pastel Dreams</button>
@@ -484,7 +490,7 @@
                 love: "Love", like: "Like", platonic: "Platonic", 
                 neutral: "Neutral", dislike: "Dislike", hate: "Hate",
                 download: "[ Download ]", reset: "[ Reset ]", saving: "Saving...",
-                labelLang: "Lang:", labelTheme: "Theme:", labelEditNames: "Marker Names:",
+                labelLang: "Lang:", labelTheme: "Theme:", labelEditNames: "Marker Names:", labelEditTitle: "Table Name:",
                 placeholder1: "+ Marker 7", placeholder2: "+ Marker 8",
                 editTable: "[ Edit Table ]", doneEditing: "[ Done Editing ]",
                 addRow: "[ + Row ]", removeRow: "[ - Row ]", addCol: "[ + Col ]", removeCol: "[ - Col ]",
@@ -498,7 +504,7 @@
                 love: "Любовь", like: "Нравится", platonic: "Платоника", 
                 neutral: "Нейтрально", dislike: "Не нравится", hate: "Ненависть",
                 download: "[ Скачать ]", reset: "[ Сброс ]", saving: "Сохраняем...",
-                labelLang: "Язык:", labelTheme: "Тема:", labelEditNames: "Названия маркеров:",
+                labelLang: "Язык:", labelTheme: "Тема:", labelEditNames: "Названия маркеров:", labelEditTitle: "Название таблицы:",
                 placeholder1: "+ Маркер 7", placeholder2: "+ Маркер 8",
                 editTable: "[ Редактировать ]", doneEditing: "[ Готово ]",
                 addRow: "[ + Ряд ]", removeRow: "[ - Ряд ]", addCol: "[ + Столбец ]", removeCol: "[ - Столбец ]",
@@ -512,7 +518,7 @@
                 love: "Обожню", like: "Подобається", platonic: "Платонічно", 
                 neutral: "Нейтрально", dislike: "Не подобається", hate: "Ненавиджу",
                 download: "[ Завантажити ]", reset: "[ Скинути ]", saving: "Зберігаємо...",
-                labelLang: "Мова:", labelTheme: "Тема:", labelEditNames: "Назви маркерів:",
+                labelLang: "Мова:", labelTheme: "Тема:", labelEditNames: "Назви маркерів:", labelEditTitle: "Назва таблиці:",
                 placeholder1: "+ Маркер 7", placeholder2: "+ Маркер 8",
                 editTable: "[ Редагувати ]", doneEditing: "[ Готово ]",
                 addRow: "[ + Ряд ]", removeRow: "[ - Ряд ]", addCol: "[ + Стовпець ]", removeCol: "[ - Стовпець ]",
@@ -672,6 +678,12 @@
             i2.addEventListener('input', () => updateMarker(i2, l2, u2, 8, pg2, pl2));
         }
 
+        // --- NEW: Title Customization Logic ---
+        document.getElementById('input-table-title').addEventListener('input', (e) => {
+            const val = e.target.value.trim();
+            document.getElementById('ui-title').textContent = val || uiText[currentLang].title;
+        });
+
         function cellClickHandler(e) {
             const cell = e.currentTarget;
             if (isEditMode) return;
@@ -791,7 +803,13 @@
                 document.getElementById(`label-custom-${key}`).textContent = input.value;
             });
 
-            document.getElementById('ui-title').innerHTML = uiText[lang].title;
+            // Update UI Title taking custom inputs into consideration
+            const titleInput = document.getElementById('input-table-title');
+            titleInput.placeholder = uiText[lang].title;
+            const customTitle = titleInput.value.trim();
+            document.getElementById('ui-title').textContent = customTitle || uiText[lang].title;
+            document.getElementById('label-edit-title').textContent = uiText[lang].labelEditTitle;
+            
             document.getElementById('download-btn').textContent = uiText[lang].download;
             document.getElementById('reset-btn').textContent = uiText[lang].reset;
             document.getElementById('label-lang').textContent = uiText[lang].labelLang;
@@ -1075,7 +1093,8 @@
                     markerNames: markerNames,
                     theme: currentTheme,
                     lang: currentLang,
-                    customColors: themes.custom.colors
+                    customColors: themes.custom.colors,
+                    customTitle: document.getElementById('input-table-title').value.trim() // Save Title
                 };
                 
                 // ТУТ ВІДБУВАЄТЬСЯ СТИСНЕННЯ (LZString)
@@ -1104,6 +1123,12 @@
                     const state = JSON.parse(decompressedString);
                     
                     if (state.lang) setLang(state.lang);
+
+                    if (state.customTitle) {
+                        const titleInput = document.getElementById('input-table-title');
+                        titleInput.value = state.customTitle;
+                        document.getElementById('ui-title').textContent = state.customTitle;
+                    }
 
                     if (state.customColors) {
                         themes.custom.colors = state.customColors;
