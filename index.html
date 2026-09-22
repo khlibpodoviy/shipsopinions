@@ -597,7 +597,12 @@
 
         function updateGradientStop(index, key, value) {
             spectrumAnchors[index][key] = key === 'pos' ? Math.max(0, Math.min(100, parseInt(value) || 0)) : value;
-            renderGradientEditor();
+            
+            if (key === 'label') {
+                updateSpectrumBar(); // Only redraw spectrum to keep focus in the text field
+            } else {
+                renderGradientEditor(); // Redraw whole row for color/pos changes
+            }
         }
 
         function updateSpectrumBar() {
@@ -611,7 +616,7 @@
             
             document.getElementById('ui-gradient-bar').style.background = `linear-gradient(to right, ${gradientStr})`;
             
-            // Rebuild text labels 
+            // Rebuild text labels - using transform technique to prevent any overflow!
             const labelsContainer = document.getElementById('ui-gradient-labels');
             labelsContainer.innerHTML = '';
             sorted.forEach(stop => {
@@ -620,7 +625,7 @@
                     span.textContent = stop.label;
                     span.style.position = 'absolute';
                     span.style.left = `${stop.pos}%`;
-                    span.style.transform = 'translateX(-50%)';
+                    span.style.transform = `translateX(-${stop.pos}%)`; // Ensures it always stays strictly within frame bounds
                     span.style.fontSize = '14px';
                     span.style.fontWeight = 'bold';
                     span.style.whiteSpace = 'nowrap';
