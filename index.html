@@ -110,6 +110,40 @@
         
         .score-input { width: 60px; text-align: center; }
 
+        /* Custom Checkbox */
+        .custom-checkbox-wrapper {
+            display: inline-flex;
+            align-items: center;
+            cursor: pointer;
+        }
+        .custom-checkbox-input {
+            display: none;
+        }
+        .custom-checkbox-box {
+            width: 22px;
+            height: 22px;
+            border: 2px solid var(--border-main);
+            background: var(--bg-paper);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 16px;
+            line-height: 1;
+            transition: background-color 0.2s, color 0.2s;
+        }
+        .custom-checkbox-wrapper:hover .custom-checkbox-box {
+            background: var(--btn-hover);
+        }
+        .custom-checkbox-input:checked + .custom-checkbox-box {
+            background: var(--border-main);
+            color: var(--bg-paper);
+        }
+        .custom-checkbox-input:checked + .custom-checkbox-box::after {
+            content: '✓';
+        }
+
         #custom-palette-settings {
             display: none; width: 100%; flex-wrap: wrap; gap: 15px; padding-top: 10px;
             border-top: 1px dashed var(--border-main); margin-top: 5px;
@@ -121,9 +155,10 @@
         input[type="color"] {
             -webkit-appearance: none; border: 1px solid var(--border-main);
             width: 30px; height: 30px; padding: 0; background: none; cursor: pointer;
+            border-radius: 4px;
         }
         input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
-        input[type="color"]::-webkit-color-swatch { border: none; }
+        input[type="color"]::-webkit-color-swatch { border: none; border-radius: 2px; }
 
         #capture-area {
             background-color: var(--bg-paper); padding: 25px;
@@ -534,7 +569,10 @@
                 const row = document.createElement('div');
                 row.className = 'stop-row';
                 row.innerHTML = `
-                    <input type="checkbox" title="Use Color in gradient?" ${stop.useColor ? 'checked' : ''} onchange="updateGradientStop(${index}, 'useColor', this.checked)">
+                    <label class="custom-checkbox-wrapper" title="Use Color in gradient?">
+                        <input type="checkbox" class="custom-checkbox-input" ${stop.useColor ? 'checked' : ''} onchange="updateGradientStop(${index}, 'useColor', this.checked)">
+                        <span class="custom-checkbox-box"></span>
+                    </label>
                     <input type="color" value="${stop.color}" title="Color" onchange="updateGradientStop(${index}, 'color', this.value)" style="opacity: ${stop.useColor ? 1 : 0.3}; pointer-events: ${stop.useColor ? 'auto' : 'none'};">
                     <input type="number" class="marker-input score-input" value="${stop.pos}" min="0" max="100" title="Percentage (0-100)" onchange="updateGradientStop(${index}, 'pos', this.value)"> %
                     <input type="text" class="marker-input" style="width: 140px;" placeholder="Label (optional)" value="${stop.label || ''}" oninput="updateGradientStop(${index}, 'label', this.value)">
@@ -596,7 +634,7 @@
         function calculateScore() {
             let total = 0;
             const cells = table.getElementsByTagName('td');
-            const numCells = cells.length || 1; // Fallback to avoid dividing by 0
+            const numCells = cells.length || 1; 
             
             const points = {
                 0: parseInt(document.getElementById('score-default').value) || 0,
@@ -624,7 +662,6 @@
             let minPossible = minScore * numCells;
             let maxPossible = maxScore * numCells;
 
-            // Failsafe in case all scores are identical (e.g. everything = 0)
             if (minPossible === maxPossible) maxPossible += 1;
 
             document.getElementById('ui-spec-min-val').textContent = minPossible;
@@ -955,7 +992,7 @@
                     if(state.spectrumStops) {
                         spectrumAnchors = state.spectrumStops.map(s => ({
                             pos: s.pos, color: s.color, label: s.label || '', 
-                            useColor: s.useColor !== undefined ? s.useColor : true // Fix legacy loads
+                            useColor: s.useColor !== undefined ? s.useColor : true 
                         }));
                     }
 
